@@ -4,6 +4,9 @@
 
 	<t t-name="muk_web_appsbar.AppsBar">
 		<div class="mk_apps_sidebar_panel">
+			<div t-if="sidebarImageUrl" class="mk_apps_sidebar_logo_wrap">
+				<img src="muk_web_appsbar/static/src/webclient/appsbar/scopex_logo.jpg" class="mk_apps_sidebar_logo"/>
+			</div>
 			<div class="mk_apps_sidebar">
 				<div class="mk_sidebar_toggle_wrap">
 					<button class="mk_sidebar_toggle_btn" t-on-click="toggleSidebar" title="Toggle Sidebar">
@@ -39,10 +42,6 @@
 			            </li>
 			    	</t>
 				</ul>
-				<div t-if="sidebarImageUrl" class="mk_apps_sidebar_logo_wrap p-0">
-
-					<img src="muk_web_appsbar/static/src/webclient/appsbar/scopex_logo.jpg" class="mk_apps_sidebar_logo"/>
-				</div>
 			</div>
 		</div>
 	</t>

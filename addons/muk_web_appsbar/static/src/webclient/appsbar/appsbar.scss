@@ -92,13 +92,33 @@
 	position: relative;
 }
 
-.mk_apps_sidebar_logo{
-	width: 100%;
-    max-width: 200px;
+// Logo positioned at top-left, in the navbar's margin-left area
+.mk_apps_sidebar_logo_wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: var(--o-navbar-height, 46px);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $mk-appbar-background;
+}
+
+.mk_apps_sidebar_logo {
+    max-width: 180px;
+    max-height: 100%;
     height: auto;
-	object-fit: cover;
-    padding: 0;
-    margin: 0;
+    object-fit: contain;
+    display: block;
+}
+
+// Toggle button wrap
+.mk_sidebar_toggle_wrap {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 4px 0 4px;
 }
 
 .mk_apps_sidebar_panel .mk_apps_sidebar .mk_apps_sidebar_menu {
@@ -136,12 +156,6 @@
 }
 
 // Toggle button styles
-.mk_sidebar_toggle_wrap {
-    display: flex;
-    justify-content: flex-end;
-    padding: 4px 4px 0 4px;
-}
-
 .mk_sidebar_toggle_btn {
     background: transparent;
     border: none;
@@ -183,8 +197,11 @@
     .mk_apps_sidebar_panel .mk_apps_sidebar .mk_apps_sidebar_menu > li > a .mk_apps_sidebar_icon {
         margin-right: 0 !important;
     }
-    .mk_apps_sidebar_logo {
-        display: none;
+    .mk_apps_sidebar_logo_wrap {
+        width: 50px;
+        .mk_apps_sidebar_logo {
+            display: none;
+        }
     }
     .mk_sidebar_toggle_wrap {
         justify-content: center;

@@ -2,14 +2,33 @@
 
 <templates xml:space="preserve">
 
-	<t 
+	<t
 		t-name="muk_web_appsbar.NavBar"
-		t-inherit="web.NavBar" 
-		t-inherit-mode="extension" 
+		t-inherit="web.NavBar"
+		t-inherit-mode="extension"
 	>
 	    <xpath expr="//nav" position="inside">
 	    	<AppsBar apps="this.getAppsMenuItems()"/>
 	    </xpath>
+	    <!-- Show App Brand on mobile too -->
+	    <xpath expr="//DropdownItem[contains(@class, 'o_menu_brand')]" position="attributes">
+	        <attribute name="t-if">currentApp</attribute>
+	    </xpath>
+	    <!-- Show Menu Sections on mobile too (remove !env.isSmall wrapper) -->
+	    <xpath expr="//t[@t-call='web.NavBar.SectionsMenu']/.." position="attributes">
+	        <attribute name="t-if">true</attribute>
+	    </xpath>
 	</t>
-	
+
+	<!-- Override SectionsMenu to remove env.isSmall check so menus render on mobile -->
+	<t
+		t-name="muk_web_appsbar.SectionsMenu"
+		t-inherit="web.NavBar.SectionsMenu"
+		t-inherit-mode="extension"
+	>
+	    <xpath expr="//t[@t-if='!env.isSmall']" position="attributes">
+	        <attribute name="t-if">true</attribute>
+	    </xpath>
+	</t>
+
 </templates>

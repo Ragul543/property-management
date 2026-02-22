@@ -218,6 +218,32 @@ div[name="payment_responsible_id"] {
     border-bottom: 1px solid #dee2e6;
 }
 
+@media (max-width: 767.98px) {
+    .o_navbar {
+        margin-left: 0 !important;
+    }
+    .o_main_navbar {
+        padding-left: 8px;
+        flex-wrap: wrap;
+        height: auto !important;
+    }
+    .o_menu_sections {
+        display: flex !important;
+        flex-wrap: wrap;
+        width: 100%;
+        overflow-x: auto;
+    }
+    .o_menu_sections .o_nav_entry,
+    .o_menu_sections .dropdown-toggle {
+        font-size: 14px !important;
+        padding: 4px 8px !important;
+        white-space: nowrap;
+    }
+    .o_menu_brand {
+        font-size: 14px !important;
+    }
+}
+
 
 .btn-outline-primary:hover{
     color: #ffffff;
