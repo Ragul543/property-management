@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================== -->
+    <!-- Incoming Mail Servers -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_server_tree" model="ir.ui.view">
+        <field name="name">mail.bot.server.tree</field>
+        <field name="model">mail.bot.server</field>
+        <field name="arch" type="xml">
+            <tree string="Incoming Mail Servers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="server_type"/>
+                <field name="server_host"/>
+                <field name="username"/>
+                <field name="state" widget="badge" decoration-success="state == 'connected'" decoration-danger="state == 'error'" decoration-info="state == 'draft'"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_server_form" model="ir.ui.view">
+        <field name="name">mail.bot.server.form</field>
+        <field name="model">mail.bot.server</field>
+        <field name="arch" type="xml">
+            <form string="Incoming Mail Server">
+                <header>
+                    <button name="action_test_connection" string="Test Connection" type="object" class="oe_highlight"/>
+                    <button name="action_fetch_emails" string="Fetch Emails Now" type="object" class="btn-primary" invisible="state != 'connected'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,connected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Server Name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Server Settings">
+                            <field name="server_type"/>
+                            <field name="server_host" placeholder="e.g., imap.gmail.com"/>
+                            <field name="server_port"/>
+                            <field name="use_ssl"/>
+                        </group>
+                        <group string="Authentication">
+                            <field name="username" placeholder="your@email.com"/>
+                            <field name="password" password="True"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Fetch Settings">
+                            <field name="fetch_interval"/>
+                            <field name="fetch_limit"/>
+                            <field name="last_fetch_date"/>
+                        </group>
+                        <group string="Other">
+                            <field name="active"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Gmail Users:</strong> You need to enable IMAP in Gmail settings and use an App Password.
+                        <br/><br/>
+                        <strong>Common IMAP Settings:</strong>
+                        <ul>
+                            <li><b>Gmail:</b> imap.gmail.com, Port 993, SSL</li>
+                            <li><b>Outlook:</b> outlook.office365.com, Port 993, SSL</li>
+                            <li><b>Yahoo:</b> imap.mail.yahoo.com, Port 993, SSL</li>
+                        </ul>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_server" model="ir.actions.act_window">
+        <field name="name">Incoming Mail Servers</field>
+        <field name="res_model">mail.bot.server</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== -->
+    <!-- Outgoing Mail Servers -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_outgoing_server_tree" model="ir.ui.view">
+        <field name="name">mail.bot.outgoing.server.tree</field>
+        <field name="model">mail.bot.outgoing.server</field>
+        <field name="arch" type="xml">
+            <tree string="Outgoing Mail Servers">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="smtp_host"/>
+                <field name="smtp_port"/>
+                <field name="smtp_encryption"/>
+                <field name="email_from"/>
+                <field name="state" widget="badge" decoration-success="state == 'connected'" decoration-danger="state == 'error'" decoration-info="state == 'draft'"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_outgoing_server_form" model="ir.ui.view">
+        <field name="name">mail.bot.outgoing.server.form</field>
+        <field name="model">mail.bot.outgoing.server</field>
+        <field name="arch" type="xml">
+            <form string="Outgoing Mail Server">
+                <header>
+                    <button name="action_test_connection" string="Test Connection" type="object" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,connected"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Server Name"/></h1>
+                    </div>
+                    <group>
+                        <group string="SMTP Server Settings">
+                            <field name="smtp_host" placeholder="e.g., smtp.gmail.com"/>
+                            <field name="smtp_port"/>
+                            <field name="smtp_encryption"/>
+                        </group>
+                        <group string="Authentication">
+                            <field name="smtp_user" placeholder="your@email.com"/>
+                            <field name="smtp_pass" password="True"/>
+                            <field name="email_from" placeholder="your@email.com"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Other">
+                            <field name="active"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert">
+                        <strong>Gmail Users:</strong> You need to use an App Password instead of your regular password.
+                        <br/>Go to Google Account &gt; Security &gt; 2-Step Verification &gt; App passwords to generate one.
+                        <br/><br/>
+                        <strong>Common SMTP Settings:</strong>
+                        <ul>
+                            <li><b>Gmail:</b> smtp.gmail.com, Port 587, TLS</li>
+                            <li><b>Outlook:</b> smtp-mail.outlook.com, Port 587, TLS</li>
+                            <li><b>Yahoo:</b> smtp.mail.yahoo.com, Port 587, TLS</li>
+                        </ul>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_outgoing_server" model="ir.actions.act_window">
+        <field name="name">Outgoing Mail Servers</field>
+        <field name="res_model">mail.bot.outgoing.server</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== -->
+    <!-- Folders -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_folder_tree" model="ir.ui.view">
+        <field name="name">mail.bot.folder.tree</field>
+        <field name="model">mail.bot.folder</field>
+        <field name="arch" type="xml">
+            <tree string="Folders">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="folder_type"/>
+                <field name="parent_id"/>
+                <field name="message_count"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_folder_form" model="ir.ui.view">
+        <field name="name">mail.bot.folder.form</field>
+        <field name="model">mail.bot.folder</field>
+        <field name="arch" type="xml">
+            <form string="Folder">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="folder_type"/>
+                            <field name="parent_id"/>
+                        </group>
+                        <group>
+                            <field name="icon"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_folder" model="ir.actions.act_window">
+        <field name="name">Folders</field>
+        <field name="res_model">mail.bot.folder</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== -->
+    <!-- Tags -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_tag_tree" model="ir.ui.view">
+        <field name="name">mail.bot.tag.tree</field>
+        <field name="model">mail.bot.tag</field>
+        <field name="arch" type="xml">
+            <tree string="Tags" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_tag_form" model="ir.ui.view">
+        <field name="name">mail.bot.tag.form</field>
+        <field name="model">mail.bot.tag</field>
+        <field name="arch" type="xml">
+            <form string="Tag">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="color" widget="color_picker"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_tag" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">mail.bot.tag</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== -->
+    <!-- Labels -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_label_tree" model="ir.ui.view">
+        <field name="name">mail.bot.label.tree</field>
+        <field name="model">mail.bot.label</field>
+        <field name="arch" type="xml">
+            <tree string="Labels" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="label_color" widget="color"/>
+                <field name="text_color" widget="color"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_label_form" model="ir.ui.view">
+        <field name="name">mail.bot.label.form</field>
+        <field name="model">mail.bot.label</field>
+        <field name="arch" type="xml">
+            <form string="Label">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="label_color" widget="color"/>
+                        <field name="text_color" widget="color"/>
+                        <field name="sequence"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_label" model="ir.actions.act_window">
+        <field name="name">Labels</field>
+        <field name="res_model">mail.bot.label</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ===================== -->
+    <!-- Themes -->
+    <!-- ===================== -->
+    <record id="view_mail_bot_theme_tree" model="ir.ui.view">
+        <field name="name">mail.bot.theme.tree</field>
+        <field name="model">mail.bot.theme</field>
+        <field name="arch" type="xml">
+            <tree string="Themes">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="primary_color" widget="color"/>
+                <field name="secondary_color" widget="color"/>
+                <field name="is_default"/>
+                <field name="active" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_mail_bot_theme_form" model="ir.ui.view">
+        <field name="name">mail.bot.theme.form</field>
+        <field name="model">mail.bot.theme</field>
+        <field name="arch" type="xml">
+            <form string="Theme">
+                <header>
+                    <button name="action_set_default" string="Set as Default" type="object" class="oe_highlight" invisible="is_default"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Theme Name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Colors">
+                            <field name="primary_color" widget="color"/>
+                            <field name="secondary_color" widget="color"/>
+                            <field name="sidebar_color" widget="color"/>
+                            <field name="background_color" widget="color"/>
+                        </group>
+                        <group string="Settings">
+                            <field name="font_family"/>
+                            <field name="is_default"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mail_bot_theme" model="ir.actions.act_window">
+        <field name="name">Themes</field>
+        <field name="res_model">mail.bot.theme</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

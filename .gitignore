@@ -1,0 +1,4 @@
+etc/
+*.pyc
+*.log
+__pycache__/

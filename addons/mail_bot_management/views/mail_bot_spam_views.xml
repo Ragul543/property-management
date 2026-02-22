@@ -1,0 +1,135 @@
+<odoo>
+
+    <!-- =================================
+         views/mail_bot_spam_views.xml
+         ================================= -->
+    
+    <!-- Spam Tree View -->
+    <record id="view_mail_bot_spam_tree" model="ir.ui.view">
+        <field name="name">mail.bot.spam.tree</field>
+        <field name="model">mail.bot.spam</field>
+        <field name="arch" type="xml">
+            <tree string="Spam" decoration-danger="spam_score &gt; 0.7">
+                <field name="sender_email"/>
+                <field name="subject"/>
+                <field name="received_date"/>
+                <field name="spam_score"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Spam Form View -->
+    <record id="view_mail_bot_spam_form" model="ir.ui.view">
+        <field name="name">mail.bot.spam.form</field>
+        <field name="model">mail.bot.spam</field>
+        <field name="arch" type="xml">
+            <form string="Spam Message">
+                <header>
+                    <button name="action_not_spam" string="Not Spam" type="object" class="oe_highlight"/>
+                    <button name="action_delete_permanently" string="Delete Permanently" type="object" class="btn-danger"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sender_email"/>
+                            <field name="recipient_email"/>
+                        </group>
+                        <group>
+                            <field name="subject"/>
+                            <field name="received_date"/>
+                            <field name="spam_score"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="spam_reason"/>
+                    </group>
+                    <notebook>
+                        <page string="Content">
+                            <field name="body" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Spam Action -->
+    <record id="action_mail_bot_spam" model="ir.actions.act_window">
+        <field name="name">Spam</field>
+        <field name="res_model">mail.bot.spam</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No spam messages
+            </p>
+        </field>
+    </record>
+
+    <!-- =================================
+         views/mail_bot_trash_views.xml
+         ================================= -->
+    
+    <!-- Trash Tree View -->
+    <record id="view_mail_bot_trash_tree" model="ir.ui.view">
+        <field name="name">mail.bot.trash.tree</field>
+        <field name="model">mail.bot.trash</field>
+        <field name="arch" type="xml">
+            <tree string="Trash">
+                <field name="sender_email"/>
+                <field name="subject"/>
+                <field name="deleted_date"/>
+                <field name="original_folder"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Trash Form View -->
+    <record id="view_mail_bot_trash_form" model="ir.ui.view">
+        <field name="name">mail.bot.trash.form</field>
+        <field name="model">mail.bot.trash</field>
+        <field name="arch" type="xml">
+            <form string="Trash Message">
+                <header>
+                    <button name="action_restore" string="Restore" type="object" class="oe_highlight"/>
+                    <button name="action_delete_permanently" string="Delete Permanently" type="object" class="btn-danger"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sender_email"/>
+                            <field name="recipient_email"/>
+                        </group>
+                        <group>
+                            <field name="subject"/>
+                            <field name="deleted_date"/>
+                            <field name="original_folder"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content">
+                            <field name="body" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Trash Action -->
+    <record id="action_mail_bot_trash" model="ir.actions.act_window">
+        <field name="name">Trash</field>
+        <field name="res_model">mail.bot.trash</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Trash is empty
+            </p>
+        </field>
+    </record>
+
+    <!-- =================================
+         views/mail_bot_menu.xml
+         ================================= -->
+    
+    
+</odoo>

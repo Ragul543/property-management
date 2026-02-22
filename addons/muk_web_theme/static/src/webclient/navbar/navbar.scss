@@ -1,0 +1,337 @@
+.o_main_navbar {
+    border-bottom: none !important;
+    background-color: white;
+}
+
+.o_main_navbar .o_menu_brand {
+    background-color: #fffefd;
+    color: black;
+    font-weight: 500;
+    
+}
+
+.o_main_navbar .o_menu_sections .o_nav_entry{
+    background-color: #fffefd;
+    color: black;
+    font-size: 16px;
+    font-weight: 450;
+}
+// .o-dropdown{
+// 	 display: none;
+// }
+
+.o-dropdown button a{
+	color: rgb(230, 9, 9);
+}
+
+.o_navbar .o_main_navbar .dropdown button {
+	background: #ffffff;
+    border: 1px solid transparent;
+    color: #ef7f29;
+}
+
+.o_main_navbar .o_menu_sections .dropdown-toggle{
+	background: #f8f9fa;
+    border: 1px solid transparent;
+    color: black;
+    font-size: 16px;
+    font-weight: 450;
+}
+
+.o_menu_sections{
+	background-color: white;
+    color: black;
+}
+
+.text-danger{
+    color: #ef7f29 !important;
+}
+
+.o_navbar .o_main_navbar .o_navbar_apps_menu  a{
+    display: none !important;
+}
+
+// .o_navbar .o_main_navbar .dropdown{
+//     display: none !important;
+// }
+
+.o_main_navbar .o_menu_brand:hover {
+    background: white;
+    color: black;
+}
+
+.o_menu_sections .o-dropdown button span{
+    color: black;
+}
+
+
+.o_field_statusbar > .o_statusbar_status > .o_arrow_button:not(.d-none).o_arrow_button_current:disabled{
+    background-color: #ed7112 !important;
+    border-color: #ef7f29 !important;
+    color: #fff !important;
+}
+
+.o_field_statusbar > .o_statusbar_status > .o_arrow_button:not(.d-none).o_arrow_button_current:disabled:before , .o_field_statusbar > .o_statusbar_status > .o_arrow_button:not(.d-none).o_arrow_button_current:disabled:after{
+    border-left-color: #ed7112;
+}
+
+.o_input{
+    border: 1px solid #ced4da !important;
+    border-radius: 3px !important;
+    padding: 5px 2px !important;
+}
+
+.o_notebook .nav-link:hover {
+    border-color: #ed7112;
+    border-bottom: none;
+    background-color: #ed7112;
+    color: white;
+}
+
+.nav-link {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #000000;
+    font-size: 16px;
+    font-weight: 450;
+}
+
+
+.nav-tabs .nav-link.active, .nav-tabs .nav-item.show .nav-link {
+    color: #ef7f29 !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #ef7f29 !important;
+    border-bottom: 3px solid #ef7f29 !important;
+}
+
+.ui-sortable tr td a, .ui-sortable tr td button{
+    color: black;
+}
+
+.rounded-pill {
+    border-radius: 50rem !important;
+    background-color: green !important;
+    color: white !important;
+}
+
+.o_main_navbar{
+    padding-left: 23px;
+}
+
+.o_navbar .o_main_navbar .o-dropdown.dropdown.o_navbar_apps_menu button{
+    display: none;
+}
+
+.btn-info {
+    color: #ffffff;
+}
+
+.o_searchview_input,.o_searchview_input_container,.o_spreadsheet_dashboard_action .o_control_panel_actions .o-filter-value .o_multi_record_selector .o_input {
+   
+    border: unset !important;
+}
+
+#optional_product_ids_0,#supplier_taxes_id_0,#category_id_0,#partner_ids_0,#categ_ids_0,#alarm_ids_0,#country_ids_0,#suggested_next_type_ids_0,#additional_product_tag_ids_0, #mail_template_ids_0,#state_ids_0,#industry_ids_0,#tag_ids_0, #taxes_id_0,#product_tag_ids_0{
+    border: unset !important;
+}
+
+// .o_form_sheet .o_inner_group .o_wrap_field .o_wrap_input  {
+//     width: 55% !important;
+// }
+
+#bill_rate_maxs_0,#lst_price_0, #list_price_0, #expected_revenue_0, #amount_0,#standard_price_0,#category_ids_0,#partner_ids_0 {
+    padding-left: 15px !important;
+    position: absolute !important;
+    margin-top: -7px !important;
+    margin-left: -5px !important;
+}
+
+div[name="standard_price_uom"] > div[name="standard_price"] + span {
+    margin-left: 100px;
+}
+
+.o-mail-AutoresizeInput{
+    border: none !important;
+}
+
+.o_form_view .o_inner_group {
+    padding-right: 20px;
+}
+
+#state_id_0{
+    margin-left: 9px;
+}
+
+div > div[name="duration"] + span {
+    margin-left: 8px;
+
+}
+
+div[name="payment_responsible_id"] {
+    width: 100% !important;
+}
+
+.o_field_many2many_selection .o_input_dropdown .o-autocomplete .o_input{
+    border: none !important;
+}
+
+.o_field_widget .o_field_tags .o_field_many2many_selection .o_input_dropdown .o-autocomplete input{
+    border: unset !important;
+}
+
+.o_form_sheet .oe_title h2{
+    display: flex;
+    justify-content: space-between;
+}
+
+#expected_revenue_0{
+    
+    padding-left: 18px !important;
+}
+.o_input_13ch span{
+    margin-right: -10px;
+}
+
+
+
+.o_field_widget .o_priority {    
+    margin-left: 58px;
+}
+
+
+.o_kanban_inline_block{
+    color: #ffffff;
+}
+
+.o_searchview_facet_label{
+    color: #fff;
+}
+
+.o_form_view .o_inner_group .o_field_tags {
+    width: 100%;
+}
+
+
+.o_navbar{
+    margin-left: 200px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+
+.btn-outline-primary:hover{
+    color: #ffffff;
+} 
+
+.o_form_view .oe_inline, .o_form_view .o_field_widget.oe_inline > * {
+    width: 100% !important;
+}
+
+.oe_title h2 .col-auto{
+    width: 50%;
+}
+
+div[name="probability"] {
+    width: 40% !important;
+}
+
+.o_main_navbar .o_menu_sections li a:after {
+    content: '';
+    top: 22px;
+    position: absolute;
+    right: 0px;
+}
+
+
+.o_navbar .o_main_navbar .o_menu_sections  .o-dropdown .dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.255em;
+    vertical-align: 0.255em;
+    content: "";
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2 > div.col-auto.pb-2.pb-md-0 > div > span{
+    margin-left: 160px;
+}
+
+
+#probability > span{
+    margin-left: -161px;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.o_group.row.align-items-start > div:nth-child(2) > div:nth-child(2) > div:nth-child(2) > div{
+    display: flex;
+}
+
+body > div.o_action_manager > div > div.o_control_panel.d-flex.flex-column.gap-3.gap-lg-1.px-3.pt-2.pb-3 > div > div.o_control_panel_actions.d-empty-none.d-flex.align-items-center.justify-content-start.justify-content-lg-around.order-2.order-lg-1.w-100.w-lg-auto > div > div.o_searchview.form-control.d-print-contents.d-flex.align-items-center.py-1 > div > div:nth-child(3) > div.o_searchview_facet_label.position-relative.rounded-start-2.px-1.text-bg-action.d-flex.align-items-center > i{
+    color: white;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div > div.o_group.row.align-items-start > div:nth-child(2) > div:nth-child(5) > div:nth-child(2) > div,
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.o_notebook.d-flex.w-100.horizontal.flex-column > div.o_notebook_content.tab-content > div > div.o_group.row.align-items-start > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div{
+    display: flex;
+}
+
+#search_type_0{
+    width: 200px !important;
+}
+
+.o_list_renderer .o_data_row.o_selected_row > .o_data_cell.o_required_modifier:not(.o_readonly_modifier) {
+    border-bottom: unset;
+}
+
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.o_notebook.d-flex.w-100.horizontal.flex-column > div.o_notebook_content.tab-content > div > div.o_group.row.align-items-start > div:nth-child(2) > div:nth-child(3) > div:nth-child(2) > div > span{
+    display: flex;
+    margin-left: -234px;
+}
+
+body > div.o_action_manager > div > div.o_control_panel.d-flex.flex-column.gap-3.gap-lg-1.px-3.pt-2.pb-3 > div > div.o_control_panel_actions.d-empty-none.d-flex.align-items-center.justify-content-start.justify-content-lg-around.order-2.order-lg-1.w-100.w-lg-auto > div > div.o_searchview.form-control.d-print-contents.d-flex.align-items-center.py-1 > div > div:nth-child(2) > div.o_searchview_facet_label.position-relative.rounded-start-2.px-1.text-bg-action.d-flex.align-items-center > i,
+body > div.o_action_manager > div > div.o_content > div > div.o_kanban_record.d-flex.flex-grow-1.flex-md-shrink-1.flex-shrink-0 > div:nth-child(1) > div.o_kanban_card_header.flex-grow-inf > div > div.badge.text-bg-info.o_kanban_inline_block.me-2{
+    color: #ffff !important;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2{
+    width: 45% !important;
+}
+
+
+
+body > div.o_action_manager > div > div.o_content > div > div:nth-child(1) > div.o_kanban_quick_create.o_field_highlight.shadow > div.o_form_renderer.o_form_nosheet.o_form_view.o_xxs_form_view.p-0.o_form_editable.d-block > div > div:nth-child(5) > div:nth-child(2) > div > div > div.o_field_widget.o_field_priority.oe_inline > div{
+    margin-left: 44px;
+}
+
+div[name="bill_rate_maxs"]  {
+    margin-left: 200px;
+}
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2 > div.col-auto.pb-2.pb-md-0 > div > span,#probability > span{
+    display: none;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2 > div.col-auto.pb-2.pb-md-0 > label{
+    margin-bottom: 15px;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2 > div.col-auto.pb-2.pb-md-0{
+    position: relative;
+}
+
+body > div.o_action_manager > div > div > div.o_content > div > div > div.o_form_sheet.position-relative > div.oe_title > h2 > div.col-auto.pb-2.pb-md-0 > div > label{
+    white-space: nowrap;
+    /* margin-left: 176px; */
+    position: absolute;
+    top: 6px;
+    left: 197px;
+}
+
+#date_deadline_and_recurring_task{
+    display: block !important;
+}
+
+.pos-branding.d-flex.justify-content-start.flex-grow-1.h-100.p-0.my-0.text-start{
+    display: none !important;
+}

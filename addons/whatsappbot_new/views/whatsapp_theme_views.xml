@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- WhatsApp Theme Form View -->
+    <record id="whatsapp_theme_view_form" model="ir.ui.view">
+        <field name="name">whatsapp.theme.form</field>
+        <field name="model">whatsapp.theme</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Theme">
+                <header>
+                    <button name="action_apply_theme" string="Apply Theme" type="object" class="oe_highlight" invisible="is_active"/>
+                    <button name="action_reset_to_default" string="Reset to Default" type="object" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Theme Name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Basic Settings">
+                            <field name="key" placeholder="Unique theme identifier"/>
+                            <field name="theme_type"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group string="Color Settings">
+                            <field name="primary_color" widget="color"/>
+                            <field name="secondary_color" widget="color"/>
+                            <field name="background_color" widget="color"/>
+                            <field name="chat_background_color" widget="color"/>
+                            <field name="sidebar_background" widget="color"/>
+                            <field name="header_background" widget="color"/>
+                            <field name="message_outgoing_bg" widget="color"/>
+                            <field name="message_incoming_bg" widget="color"/>
+                        </group>
+                    </group>
+                    <group string="Background Settings">
+                        <field name="enable_wallpaper"/>
+                        <field name="wallpaper_opacity" invisible="not enable_wallpaper"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- WhatsApp Theme Tree View -->
+    <record id="whatsapp_theme_view_tree" model="ir.ui.view">
+        <field name="name">whatsapp.theme.tree</field>
+        <field name="model">whatsapp.theme</field>
+        <field name="arch" type="xml">
+            <tree string="WhatsApp Themes">
+                <field name="name"/>
+                <field name="key"/>
+                <field name="theme_type"/>
+                <field name="is_active"/>
+                <field name="primary_color" widget="color"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- WhatsApp Theme Action -->
+    <record id="whatsapp_theme_action" model="ir.actions.act_window">
+        <field name="name">WhatsApp Themes</field>
+        <field name="res_model">whatsapp.theme</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first WhatsApp theme!
+            </p>
+            <p>
+                Configure custom themes for your WhatsApp interface.
+            </p>
+        </field>
+    </record>
+
+    <!-- Add to WhatsApp Menu -->
+    <menuitem id="whatsapp_menu_theme"
+              name="Themes"
+              parent="whatsapp_menu_config"
+              action="whatsapp_theme_action"
+              sequence="30"/>
+</odoo>

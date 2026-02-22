@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- WhatsApp Conversation Form View (Admin) -->
+    <record id="whatsapp_conversation_view_form" model="ir.ui.view">
+        <field name="name">whatsapp.conversation.form</field>
+        <field name="model">whatsapp.conversation</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp Conversation">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_pin"
+                                icon="fa-thumb-tack">
+                            <field name="is_pinned" widget="boolean_button"
+                                   options='{"terminology": {"string_true": "Pinned", "string_false": "Not Pinned"}}'/>
+                        </button>
+                    </div>
+                    <field name="avatar" widget="image" class="oe_avatar"/>
+                    <div class="oe_title">
+                        <h1><field name="display_name"/></h1>
+                        <h3><field name="phone"/></h3>
+                    </div>
+                    <group>
+                        <group string="Contact Info">
+                            <field name="partner_id"/>
+                            <field name="unread_count"/>
+                            <field name="message_count"/>
+                        </group>
+                        <group string="Last Activity">
+                            <field name="last_message_body"/>
+                            <field name="last_message_date"/>
+                            <field name="last_message_direction"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Messages" name="messages">
+                            <field name="message_ids" readonly="1">
+                                <tree string="Messages">
+                                    <field name="timestamp"/>
+                                    <field name="direction"/>
+                                    <field name="body"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- WhatsApp Conversation List View (Admin) -->
+    <record id="whatsapp_conversation_view_list" model="ir.ui.view">
+        <field name="name">whatsapp.conversation.list</field>
+        <field name="model">whatsapp.conversation</field>
+        <field name="arch" type="xml">
+            <tree string="WhatsApp Conversations">
+                <field name="display_name"/>
+                <field name="phone"/>
+                <field name="partner_id"/>
+                <field name="unread_count" decoration-danger="unread_count > 0" widget="badge"/>
+                <field name="last_message_body"/>
+                <field name="last_message_date"/>
+                <field name="is_pinned"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Admin Action -->
+    <record id="whatsapp_conversation_action" model="ir.actions.act_window">
+        <field name="name">Conversations (Admin)</field>
+        <field name="res_model">whatsapp.conversation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No conversations yet
+            </p>
+            <p>Conversations will appear here when you send or receive WhatsApp messages.</p>
+        </field>
+    </record>
+
+    
+</odoo>

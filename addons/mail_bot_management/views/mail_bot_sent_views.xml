@@ -1,0 +1,66 @@
+<odoo>
+    <!-- Sent Tree View -->
+    <record id="view_mail_bot_sent_tree" model="ir.ui.view">
+        <field name="name">mail.bot.sent.tree</field>
+        <field name="model">mail.bot.sent</field>
+        <field name="arch" type="xml">
+            <tree string="Sent Items" decoration-info="is_starred">
+                <field name="is_starred" widget="boolean_favorite" nolabel="1"/>
+                <field name="recipient_email"/>
+                <field name="subject"/>
+                <field name="sent_date"/>
+                <field name="state" widget="badge" decoration-success="state == 'delivered'" decoration-info="state == 'sent'" decoration-danger="state == 'failed'"/>
+                <field name="has_attachments" widget="boolean"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Sent Form View -->
+    <record id="view_mail_bot_sent_form" model="ir.ui.view">
+        <field name="name">mail.bot.sent.form</field>
+        <field name="model">mail.bot.sent</field>
+        <field name="arch" type="xml">
+            <form string="Sent Message">
+                <header>
+                    <button name="action_move_to_trash" string="Delete" type="object"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="recipient_email" widget="email"/>
+                            <field name="cc_emails"/>
+                            <field name="bcc_emails"/>
+                        </group>
+                        <group>
+                            <field name="subject"/>
+                            <field name="sent_date"/>
+                            <field name="user_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content">
+                            <field name="body" widget="html"/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Sent Action -->
+    <record id="action_mail_bot_sent" model="ir.actions.act_window">
+        <field name="name">Sent</field>
+        <field name="res_model">mail.bot.sent</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No sent messages
+            </p>
+        </field>
+    </record>
+</odoo>
+    

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- CRM Lead Form View Extension -->
+    <record id="crm_lead_view_form_property" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.property</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Smart Buttons -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_properties" type="object"
+                        class="oe_stat_button" icon="fa-building"
+                        invisible="not property_ids">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Properties</span>
+                    </div>
+                </button>
+                <button name="action_view_property_sale" type="object"
+                        class="oe_stat_button" icon="fa-dollar"
+                        invisible="property_sale_count == 0">
+                    <field name="property_sale_count" widget="statinfo"
+                           string="Sale Order"/>
+                </button>
+                <button name="action_view_property_rental" type="object"
+                        class="oe_stat_button" icon="fa-key"
+                        invisible="property_rental_count == 0">
+                    <field name="property_rental_count" widget="statinfo"
+                           string="Rental"/>
+                </button>
+                <button name="action_view_property_auction" type="object"
+                        class="oe_stat_button" icon="fa-gavel"
+                        invisible="property_auction_count == 0">
+                    <field name="property_auction_count" widget="statinfo"
+                           string="Auction"/>
+                </button>
+            </xpath>
+            <!-- Action Buttons in Header -->
+            <xpath expr="//header" position="inside">
+                <button name="action_create_property_sale" string="Create Sale Order"
+                        type="object" class="btn-primary"
+                        invisible="not selected_property_id or property_interest_type != 'sale' or property_sale_id"/>
+                <button name="action_create_property_rental" string="Create Rental"
+                        type="object" class="btn-primary"
+                        invisible="not selected_property_id or property_interest_type != 'rent' or property_rental_id"/>
+                <button name="action_create_property_auction" string="Create Auction"
+                        type="object" class="btn-primary"
+                        invisible="not selected_property_id or property_interest_type != 'auction' or property_auction_id"/>
+            </xpath>
+            <!-- Property Section before notebook -->
+            <xpath expr="//notebook" position="before">
+                <group string="Property Information">
+                    <group>
+                        <field name="property_interest_type" widget="radio"
+                               options="{'horizontal': True}"/>
+                        <field name="property_sale_rent_filter" invisible="1"/>
+                        <field name="property_ids" widget="many2many_tags"
+                               domain="[('state', '=', 'available'), ('sale_rent', '=', property_sale_rent_filter)]"/>
+                        <field name="selected_property_id"
+                               domain="[('id', 'in', property_ids)]"/>
+                    </group>
+                    <group>
+                        <field name="budget_min"/>
+                        <field name="budget_max"/>
+                        <field name="property_sale_id" readonly="1"
+                               invisible="not property_sale_id"/>
+                        <field name="property_rental_id" readonly="1"
+                               invisible="not property_rental_id"/>
+                        <field name="property_auction_id" readonly="1"
+                               invisible="not property_auction_id"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- CRM Lead Tree View Extension -->
+    <record id="crm_lead_view_tree_property" model="ir.ui.view">
+        <field name="name">crm.lead.view.tree.property</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='team_id']" position="after">
+                <field name="property_interest_type" optional="show"/>
+                <field name="selected_property_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- CRM Lead Search View Extension -->
+    <record id="crm_lead_view_search_property" model="ir.ui.view">
+        <field name="name">crm.lead.view.search.property</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='inactive']" position="after">
+                <separator/>
+                <filter string="Property Leads" name="property_leads"
+                        domain="[('property_interest_type', '!=', False)]"/>
+                <filter string="Sale Interest" name="sale_interest"
+                        domain="[('property_interest_type', '=', 'sale')]"/>
+                <filter string="Rent Interest" name="rent_interest"
+                        domain="[('property_interest_type', '=', 'rent')]"/>
+                <filter string="Auction Interest" name="auction_interest"
+                        domain="[('property_interest_type', '=', 'auction')]"/>
+            </xpath>
+            <xpath expr="//filter[@name='stage']" position="after">
+                <filter string="Interest Type" name="group_interest_type"
+                        context="{'group_by': 'property_interest_type'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Property Leads Action (for menu) -->
+    <record id="action_property_leads" model="ir.actions.act_window">
+        <field name="name">Property Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,kanban,form,activity</field>
+        <field name="domain">[('property_interest_type', '!=', False)]</field>
+        <field name="context">{'default_type': 'opportunity'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new property lead!
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu item under Property Management -->
+    <menuitem id="property_crm_menu" name="Leads"
+              parent="property_root_menu"
+              action="action_property_leads" sequence="1"/>
+</odoo>

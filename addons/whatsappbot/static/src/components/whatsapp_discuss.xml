@@ -1,0 +1,1290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="whatsappbot.WhatsAppDiscuss">
+        <div t-attf-class="o_whatsapp_discuss d-flex h-100 #{state.darkMode ? 'o_dark_mode' : ''}"
+             t-on-dragover="onDragOver"
+             t-on-dragleave="onDragLeave"
+             t-on-drop="onDrop">
+            <!-- Sidebar - Conversation List -->
+            <div class="o_whatsapp_sidebar">
+                <div class="o_whatsapp_sidebar_header">
+                    <h4 class="m-0">
+                        <i class="fa fa-whatsapp text-success me-2"/>
+                        WhatsApp
+                    </h4>
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-sm btn-light me-1" t-on-click="refreshConversations" title="Refresh">
+                            <i class="fa fa-refresh"/>
+                        </button>
+                        <button class="btn btn-sm btn-light me-1" t-on-click="toggleNewGroup" title="New Group">
+                            <i class="fa fa-users"/>
+                        </button>
+                        <button class="btn btn-sm btn-success me-1" t-on-click="toggleNewConversation" title="New Chat">
+                            <i class="fa fa-plus"/>
+                        </button>
+                        <!-- Settings Menu -->
+                        <div class="o_sidebar_settings_dropdown position-relative">
+                            <button class="btn btn-sm btn-light" t-on-click="toggleSidebarSettings" title="Settings">
+                                <i class="fa fa-ellipsis-v"/>
+                            </button>
+                            <div t-if="state.showSidebarSettings" class="o_sidebar_settings_menu">
+                                <div class="o_sidebar_settings_item" t-on-click="toggleSelectionMode">
+                                    <i class="fa fa-check-square-o me-2"/>Select chats
+                                </div>
+                                <div class="o_sidebar_settings_divider"/>
+                                <div class="o_sidebar_settings_item" t-on-click="openWhatsAppConfig">
+                                    <i class="fa fa-cog me-2"/>Settings
+                                </div>
+                                <div class="o_sidebar_settings_item" t-on-click="openArchivedChats">
+                                    <i class="fa fa-archive me-2"/>Archived
+                                </div>
+                                <div class="o_sidebar_settings_item" t-on-click="openStarredMessages">
+                                    <i class="fa fa-star me-2"/>Starred
+                                </div>
+                                <div class="o_sidebar_settings_divider"/>
+                                <div class="o_sidebar_settings_item" t-on-click="toggleDarkMode">
+                                    <i t-attf-class="fa #{state.darkMode ? 'fa-sun-o' : 'fa-moon-o'} me-2"/>
+                                    <t t-if="state.darkMode">Light Mode</t>
+                                    <t t-else="">Dark Mode</t>
+                                </div>
+                                <div class="o_sidebar_settings_item" t-on-click="openWhatsAppHelp">
+                                    <i class="fa fa-question-circle me-2"/>Help
+                                </div>
+                                <div class="o_sidebar_settings_divider"/>
+                                <div class="o_sidebar_settings_item text-danger" t-on-click="logoutWhatsApp">
+                                    <i class="fa fa-sign-out me-2"/>Logout
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Search Button -->
+                        <button class="btn btn-sm btn-light" t-on-click="toggleSearch" title="Search (Ctrl+F)">
+                            <i class="fa fa-search"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Panel -->
+                <div t-if="state.showSearch" class="o_whatsapp_search_panel p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               placeholder="Search messages..."
+                               t-model="state.searchMessagesQuery"
+                               t-on-input="searchMessages"/>
+                        <button class="btn btn-sm btn-link" t-on-click="toggleSearch">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <div t-if="state.searchingMessages" class="text-muted small">Searching...</div>
+                    <div t-elif="state.searchResults.length > 0" class="o_search_results">
+                        <t t-foreach="state.searchResults" t-as="result" t-key="result.id">
+                            <div class="o_search_result_item" t-on-click="() => goToSearchResult(result)">
+                                <div class="small text-muted" t-if="result.conversation_name" t-out="result.conversation_name"/>
+                                <div class="text-truncate" t-out="result.body"/>
+                                <div class="small text-muted" t-out="formatMessageTime(result.timestamp)"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div t-elif="state.searchMessagesQuery.length >= 2" class="text-muted small">No results found</div>
+                </div>
+
+                <!-- New Conversation Panel -->
+                <div t-if="state.showNewConversation" class="o_whatsapp_new_conversation">
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="m-0">New Conversation</h6>
+                            <button class="btn btn-sm btn-link" t-on-click="toggleNewConversation">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+
+                        <!-- Search Contacts -->
+                        <div class="input-group mb-3">
+                            <span class="input-group-text"><i class="fa fa-search"/></span>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Search contacts..."
+                                   t-att-value="state.searchQuery"
+                                   t-on-input="searchContacts"/>
+                        </div>
+
+                        <!-- Loading Contacts -->
+                        <div t-if="state.loadingContacts" class="text-center p-3">
+                            <i class="fa fa-spinner fa-spin"/> Loading contacts...
+                        </div>
+
+                        <!-- Contact Results -->
+                        <div t-elif="state.contactResults.length" class="o_contact_results">
+                            <div class="small text-muted mb-2">
+                                <i class="fa fa-address-book me-1"/>
+                                <t t-esc="state.contactResults.length"/> contacts with phone numbers
+                            </div>
+                            <t t-foreach="state.contactResults" t-as="contact" t-key="contact.id">
+                                <div class="o_contact_item" t-att-data-phone="contact.phone" t-att-data-partner="contact.id" t-on-click="onContactClick">
+                                    <div class="o_contact_avatar">
+                                        <t t-if="contact.avatar">
+                                            <img t-att-src="'data:image/png;base64,' + contact.avatar" alt="Avatar"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-user-circle"/>
+                                        </t>
+                                    </div>
+                                    <div class="o_contact_info">
+                                        <div class="o_contact_name" t-esc="contact.name"/>
+                                        <div class="o_contact_phone" t-esc="contact.display_phone or contact.phone"/>
+                                    </div>
+                                    <i class="fa fa-chevron-right text-muted"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- No Contacts Found -->
+                        <div t-elif="!state.loadingContacts" class="text-center p-3 text-muted">
+                            <i class="fa fa-address-book fa-2x mb-2"/>
+                            <p class="mb-0">No contacts with phone numbers found</p>
+                        </div>
+
+                        <!-- Manual Phone Entry -->
+                        <div class="o_phone_entry mt-3">
+                            <label class="small text-muted">Or enter phone number:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">+</span>
+                                <input type="tel"
+                                       class="form-control"
+                                       placeholder="91xxxxxxxxxx"
+                                       t-model="state.newPhoneNumber"/>
+                                <button class="btn btn-success" t-on-click="startConversationFromPhone">
+                                    <i class="fa fa-arrow-right"/>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Group Panel -->
+                <div t-if="state.showNewGroup" class="o_whatsapp_new_conversation">
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="m-0">
+                                <i class="fa fa-users me-2"/>New Group
+                            </h6>
+                            <button class="btn btn-sm btn-link" t-on-click="toggleNewGroup">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+
+                        <!-- Group Name -->
+                        <div class="mb-3">
+                            <label class="small text-muted">Group Name:</label>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Enter group name..."
+                                   t-model="state.newGroupName"/>
+                        </div>
+
+                        <!-- Selected Participants -->
+                        <div t-if="state.selectedContacts.length" class="mb-3">
+                            <label class="small text-muted">Participants (<t t-esc="state.selectedContacts.length"/>):</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                <t t-foreach="state.selectedContacts" t-as="contact" t-key="contact.id">
+                                    <span class="badge bg-success d-flex align-items-center gap-1">
+                                        <t t-esc="contact.name"/>
+                                        <i class="fa fa-times cursor-pointer"
+                                           t-att-data-id="contact.id"
+                                           t-on-click="removeContactFromGroup"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Search Contacts for Group -->
+                        <div class="input-group mb-3">
+                            <span class="input-group-text"><i class="fa fa-search"/></span>
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Search contacts to add..."
+                                   t-att-value="state.searchQuery"
+                                   t-on-input="searchContacts"/>
+                        </div>
+
+                        <!-- Loading Contacts -->
+                        <div t-if="state.loadingContacts" class="text-center p-3">
+                            <i class="fa fa-spinner fa-spin"/> Loading contacts...
+                        </div>
+
+                        <!-- Contact Results for Group -->
+                        <div t-elif="state.contactResults.length" class="o_contact_results mb-3">
+                            <div class="small text-muted mb-2">
+                                <i class="fa fa-address-book me-1"/>
+                                Select contacts to add
+                            </div>
+                            <t t-foreach="state.contactResults" t-as="contact" t-key="contact.id">
+                                <div class="o_contact_item"
+                                     t-att-data-id="contact.id"
+                                     t-on-click="onContactSelectForGroup">
+                                    <div class="o_contact_avatar">
+                                        <t t-if="contact.avatar">
+                                            <img t-att-src="'data:image/png;base64,' + contact.avatar" alt="Avatar"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-user-circle"/>
+                                        </t>
+                                    </div>
+                                    <div class="o_contact_info">
+                                        <div class="o_contact_name" t-esc="contact.name"/>
+                                        <div class="o_contact_phone" t-esc="contact.display_phone or contact.phone"/>
+                                    </div>
+                                    <i class="fa fa-plus-circle text-success"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- No Contacts Found -->
+                        <div t-elif="!state.loadingContacts" class="text-center p-3 text-muted mb-3">
+                            <i class="fa fa-address-book fa-2x mb-2"/>
+                            <p class="mb-0">No contacts with phone numbers found</p>
+                        </div>
+
+                        <!-- Message Permission Setting -->
+                        <div class="mb-3 d-flex align-items-center justify-content-between py-2 px-2 border rounded bg-light">
+                            <span class="small text-muted">
+                                <i class="fa fa-shield me-1"/>Who can send:
+                            </span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="adminOnlyToggle"
+                                       style="cursor: pointer;"
+                                       t-att-checked="state.newGroupAdminOnly"
+                                       t-on-change="toggleAdminOnly"/>
+                                <label class="form-check-label small" for="adminOnlyToggle" style="cursor: pointer;">
+                                    <t t-if="state.newGroupAdminOnly">
+                                        <i class="fa fa-lock text-warning"/>
+                                        <span class="ms-1">Admins</span>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-users text-success"/>
+                                        <span class="ms-1">Everyone</span>
+                                    </t>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Create Group Button -->
+                        <button class="btn btn-success w-100" t-on-click="createGroup">
+                            <i class="fa fa-users me-2"/>Create Group
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Selection Action Bar -->
+                <div t-if="state.selectionMode" class="o_selection_action_bar">
+                    <div class="d-flex align-items-center justify-content-between p-2">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-link" t-on-click="exitSelectionMode">
+                                <i class="fa fa-arrow-left"/>
+                            </button>
+                            <span class="ms-2 fw-bold">
+                                <t t-esc="state.selectedConversations.length"/> selected
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-link" t-on-click="selectAllConversations" title="Select All">
+                                <i t-att-class="'fa ' + (allSelected ? 'fa-check-square text-success' : 'fa-square-o')"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div t-if="hasSelection" class="d-flex justify-content-around p-2 border-top bg-light">
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="bulkPinChats" title="Pin/Unpin">
+                            <i class="fa fa-thumb-tack"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="bulkMuteChats" title="Mute">
+                            <i class="fa fa-bell-slash"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="bulkArchiveChats" title="Archive">
+                            <i class="fa fa-archive"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="bulkMarkAsRead" title="Mark as Read">
+                            <i class="fa fa-check-double"/>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" t-on-click="bulkDeleteChats" title="Delete">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Conversation List -->
+                <div class="o_whatsapp_conversation_list" t-if="!state.showNewConversation and !state.showNewGroup">
+                    <!-- Not Connected - Show Login Message -->
+                    <t t-if="!state.isConnected">
+                        <div class="text-center p-5">
+                            <i class="fa fa-whatsapp fa-4x text-muted mb-3" style="display: block;"/>
+                            <h5 class="text-muted mb-3">WhatsApp Not Connected</h5>
+                            <p class="text-muted mb-4">Please login to WhatsApp to view your conversations</p>
+                            <div class="d-flex flex-column gap-2 align-items-center">
+                                <button class="btn btn-success" t-on-click="showQRModal">
+                                    <i class="fa fa-qrcode me-2"/>Scan QR Code to Login
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" t-on-click="openWhatsAppConfig">
+                                    <i class="fa fa-cog me-2"/>Configure WhatsApp Settings
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-elif="state.loading">
+                        <div class="text-center p-4">
+                            <i class="fa fa-spinner fa-spin fa-2x"/>
+                        </div>
+                    </t>
+                    <t t-elif="!state.conversations.length">
+                        <div class="text-center p-4 text-muted">
+                            <i class="fa fa-comments fa-3x mb-3"/>
+                            <p>No conversations yet</p>
+                            <button class="btn btn-success" t-on-click="toggleNewConversation">
+                                Start a conversation
+                            </button>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <t t-foreach="state.conversations" t-as="conv" t-key="conv.id">
+                            <div class="o_conversation_item"
+                                 t-att-class="{'active': state.activeConversation and state.activeConversation.id === conv.id, 'blocked': conv.is_blocked, 'selected': state.selectionMode and isConversationSelected(conv.id)}"
+                                 t-att-data-id="conv.id"
+                                 t-on-click="(ev) => state.selectionMode ? this.toggleConversationSelection(conv.id) : this.onConversationClick(ev)">
+                                <!-- Selection Checkbox -->
+                                <div t-if="state.selectionMode" class="o_selection_checkbox me-2">
+                                    <i t-att-class="'fa fa-lg ' + (isConversationSelected(conv.id) ? 'fa-check-circle text-success' : 'fa-circle-o')"/>
+                                </div>
+                                <div class="o_conversation_avatar" t-att-class="{'o_group_avatar': conv.is_group}">
+                                    <t t-if="conv.is_group">
+                                        <i class="fa fa-users"/>
+                                    </t>
+                                    <t t-elif="conv.avatar">
+                                        <img t-att-src="'data:image/png;base64,' + conv.avatar" alt="Avatar"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-user-circle"/>
+                                    </t>
+                                </div>
+                                <div class="o_conversation_content">
+                                    <div class="o_conversation_header">
+                                        <span class="o_conversation_name">
+                                            <i t-if="conv.is_pinned" class="fa fa-thumb-tack me-1 text-primary" title="Pinned"/>
+                                            <i t-if="conv.is_muted" class="fa fa-bell-slash me-1 text-muted" title="Muted"/>
+                                            <i t-if="conv.is_blocked" class="fa fa-ban me-1 text-danger" title="Blocked"/>
+                                            <i t-if="conv.is_group" class="fa fa-users me-1 text-muted"/>
+                                            <t t-esc="conv.display_name"/>
+                                        </span>
+                                        <span class="o_conversation_time" t-esc="formatTime(conv.last_message_date)"/>
+                                    </div>
+                                    <div class="o_conversation_preview">
+                                        <span class="o_message_preview">
+                                            <t t-if="conv.is_group and conv.last_message_author">
+                                                <span class="text-primary"><t t-esc="conv.last_message_author"/>: </span>
+                                            </t>
+                                            <i t-elif="conv.last_message_direction === 'outgoing'" class="fa fa-reply me-1"/>
+                                            <t t-esc="conv.last_message || 'No messages'"/>
+                                        </span>
+                                        <span t-if="conv.unread_count" class="o_unread_badge" t-esc="conv.unread_count"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="o_whatsapp_chat_area">
+                <t t-if="state.activeConversation">
+                    <!-- Chat Header -->
+                    <div class="o_chat_header">
+                        <div class="o_chat_header_avatar" t-att-class="{'o_group_avatar': state.activeConversation.is_group}">
+                            <t t-if="state.activeConversation.is_group">
+                                <i class="fa fa-users"/>
+                            </t>
+                            <t t-elif="state.activeConversation.avatar">
+                                <img t-att-src="'data:image/png;base64,' + state.activeConversation.avatar" alt="Avatar"/>
+                            </t>
+                            <t t-else="">
+                                <i class="fa fa-user-circle"/>
+                            </t>
+                        </div>
+                        <div class="o_chat_header_info flex-grow-1" t-on-click="state.activeConversation.is_group and toggleGroupInfo">
+                            <div class="o_chat_header_name" t-esc="state.activeConversation.display_name"/>
+                            <!-- Typing Indicator -->
+                            <t t-if="getTypingIndicatorText()">
+                                <div class="o_typing_indicator">
+                                    <span class="o_typing_text" t-out="getTypingIndicatorText()"/>
+                                </div>
+                            </t>
+                            <t t-elif="state.activeConversation.is_group">
+                                <div class="o_chat_header_phone">
+                                    <i class="fa fa-users me-1"/>
+                                    <t t-esc="state.activeConversation.participant_count || 0"/> participants
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="o_chat_header_phone" t-esc="'+' + state.activeConversation.phone"/>
+                            </t>
+                        </div>
+                        <t t-if="state.activeConversation.is_group">
+                            <button class="btn btn-sm btn-link text-white" t-on-click="toggleGroupInfo" title="Group Info">
+                                <i class="fa fa-info-circle"/>
+                            </button>
+                        </t>
+                        <!-- Add to Contact button for unknown contacts -->
+                        <t t-if="!state.activeConversation.is_group and !state.activeConversation.partner_id">
+                            <button class="btn btn-sm btn-link text-white" t-on-click="addToContacts" title="Add to Contacts">
+                                <i class="fa fa-user-plus"/>
+                            </button>
+                        </t>
+                        <!-- Video Call Button -->
+                        <button class="btn btn-sm btn-link text-white o_call_btn" t-on-click="startVideoCall" title="Video call">
+                            <i class="fa fa-video-camera"/>
+                        </button>
+                        <!-- Voice Call Button -->
+                        <button class="btn btn-sm btn-link text-white o_call_btn" t-on-click="startVoiceCall" title="Voice call">
+                            <i class="fa fa-phone"/>
+                        </button>
+                        <!-- Settings Menu Button -->
+                        <div class="o_settings_dropdown position-relative">
+                            <button class="btn btn-sm btn-link text-white" t-on-click="toggleSettingsMenu" title="More options">
+                                <i class="fa fa-ellipsis-v"/>
+                            </button>
+                            <!-- Settings Dropdown -->
+                            <div t-if="state.showSettingsMenu" class="o_settings_menu">
+                                <!-- View Contact Info (for all individual chats) -->
+                                <t t-if="!state.activeConversation.is_group">
+                                    <div class="o_settings_item" t-on-click="viewContactInfo">
+                                        <i class="fa fa-user me-2"/>View contact
+                                    </div>
+                                </t>
+                                <!-- Pin/Unpin -->
+                                <div class="o_settings_item" t-on-click="pinChat">
+                                    <i t-att-class="'fa me-2 ' + (state.activeConversation.is_pinned ? 'fa-thumb-tack text-primary' : 'fa-thumb-tack')"/>
+                                    <t t-if="state.activeConversation.is_pinned">Unpin chat</t>
+                                    <t t-else="">Pin chat</t>
+                                </div>
+                                <!-- Mute/Unmute -->
+                                <div class="o_settings_item o_has_submenu" t-on-click="toggleMuteOptions">
+                                    <i t-att-class="'fa me-2 ' + (state.activeConversation.is_muted ? 'fa-bell-slash text-warning' : 'fa-bell')"/>
+                                    <t t-if="state.activeConversation.is_muted">Unmute notifications</t>
+                                    <t t-else="">Mute notifications</t>
+                                    <i class="fa fa-chevron-right ms-auto"/>
+                                </div>
+                                <!-- Mute submenu -->
+                                <div t-if="state.showMuteOptions" class="o_settings_submenu">
+                                    <t t-if="state.activeConversation.is_muted">
+                                        <div class="o_settings_item" t-on-click="() => this.muteChat('unmute')">
+                                            <i class="fa fa-bell me-2"/>Unmute
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="o_settings_item" t-on-click="() => this.muteChat('8hours')">
+                                            <i class="fa fa-clock-o me-2"/>8 hours
+                                        </div>
+                                        <div class="o_settings_item" t-on-click="() => this.muteChat('1week')">
+                                            <i class="fa fa-calendar me-2"/>1 week
+                                        </div>
+                                        <div class="o_settings_item" t-on-click="() => this.muteChat('forever')">
+                                            <i class="fa fa-ban me-2"/>Always
+                                        </div>
+                                    </t>
+                                </div>
+                                <!-- Archive -->
+                                <div class="o_settings_item" t-on-click="archiveChat">
+                                    <i class="fa fa-archive me-2"/>
+                                    <t t-if="state.activeConversation.is_archived">Unarchive chat</t>
+                                    <t t-else="">Archive chat</t>
+                                </div>
+                                <!-- Block (only for individual chats) -->
+                                <t t-if="!state.activeConversation.is_group">
+                                    <div class="o_settings_item" t-on-click="blockContact">
+                                        <i t-att-class="'fa me-2 ' + (state.activeConversation.is_blocked ? 'fa-unlock text-success' : 'fa-ban text-danger')"/>
+                                        <t t-if="state.activeConversation.is_blocked">Unblock contact</t>
+                                        <t t-else="">Block contact</t>
+                                    </div>
+                                </t>
+                                <div class="o_settings_divider"/>
+                                <!-- Clear Chat -->
+                                <div class="o_settings_item text-warning" t-on-click="clearChat">
+                                    <i class="fa fa-eraser me-2"/>Clear chat
+                                </div>
+                                <!-- Delete Chat -->
+                                <div class="o_settings_item text-danger" t-on-click="deleteChat">
+                                    <i class="fa fa-trash me-2"/>Delete chat
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Info Panel (for individual chats) -->
+                    <div t-if="state.showContactInfo and !state.activeConversation.is_group" class="o_contact_info_panel">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="m-0">Contact Info</h6>
+                                <button class="btn btn-sm btn-link" t-on-click="toggleContactInfo">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+
+                            <!-- Contact Avatar and Name -->
+                            <div class="text-center mb-3">
+                                <div class="o_contact_info_avatar mx-auto mb-2">
+                                    <t t-if="state.activeConversation.avatar">
+                                        <img t-att-src="'data:image/png;base64,' + state.activeConversation.avatar" alt="Avatar"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-user-circle"/>
+                                    </t>
+                                </div>
+                                <h5 class="mb-1" t-esc="state.activeConversation.display_name"/>
+                                <p class="text-muted mb-0">
+                                    <i class="fa fa-phone me-1"/>
+                                    +<t t-esc="state.activeConversation.phone"/>
+                                </p>
+                            </div>
+
+                            <!-- Contact Details -->
+                            <div class="o_contact_info_section mb-3">
+                                <label class="small text-muted d-block mb-2">About</label>
+                                <div class="bg-light rounded p-2">
+                                    <t t-if="state.activeConversation.partner_id">
+                                        <div class="small">
+                                            <i class="fa fa-link text-success me-2"/>
+                                            Linked to Contact
+                                        </div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="small text-muted">
+                                            <i class="fa fa-info-circle me-2"/>
+                                            Not linked to any contact
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Status Indicators -->
+                            <div class="o_contact_info_section mb-3">
+                                <label class="small text-muted d-block mb-2">Status</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span t-if="state.activeConversation.is_pinned" class="badge bg-primary">
+                                        <i class="fa fa-thumb-tack me-1"/>Pinned
+                                    </span>
+                                    <span t-if="state.activeConversation.is_muted" class="badge bg-warning text-dark">
+                                        <i class="fa fa-bell-slash me-1"/>Muted
+                                    </span>
+                                    <span t-if="state.activeConversation.is_blocked" class="badge bg-danger">
+                                        <i class="fa fa-ban me-1"/>Blocked
+                                    </span>
+                                    <span t-if="!state.activeConversation.is_pinned and !state.activeConversation.is_muted and !state.activeConversation.is_blocked" class="badge bg-secondary">
+                                        <i class="fa fa-check me-1"/>Active
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Message Stats -->
+                            <div class="o_contact_info_section mb-3">
+                                <label class="small text-muted d-block mb-2">Chat Statistics</label>
+                                <div class="bg-light rounded p-2">
+                                    <div class="d-flex justify-content-between small">
+                                        <span>Total Messages:</span>
+                                        <strong t-esc="state.activeConversation.message_count || 0"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="o_contact_info_actions">
+                                <t t-if="state.activeConversation.partner_id">
+                                    <button class="btn btn-outline-primary btn-sm w-100 mb-2" t-on-click="openContactForm">
+                                        <i class="fa fa-external-link me-2"/>View in Contacts
+                                    </button>
+                                </t>
+                                <t t-else="">
+                                    <button class="btn btn-outline-success btn-sm w-100 mb-2" t-on-click="addToContacts">
+                                        <i class="fa fa-user-plus me-2"/>Add to Contacts
+                                    </button>
+                                </t>
+                                <button class="btn btn-outline-secondary btn-sm w-100" t-on-click="toggleContactInfo">
+                                    <i class="fa fa-times me-2"/>Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group Info Panel -->
+                    <div t-if="state.showGroupInfo and state.activeConversation.is_group" class="o_group_info_panel">
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="m-0">Group Info</h6>
+                                <button class="btn btn-sm btn-link" t-on-click="toggleGroupInfo">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+
+                            <!-- Group Name Section -->
+                            <div class="mb-3">
+                                <label class="small text-muted d-block mb-1">Group Name</label>
+                                <t t-if="state.editingGroupName">
+                                    <!-- Edit Mode -->
+                                    <div class="input-group input-group-sm">
+                                        <input type="text"
+                                               class="form-control"
+                                               t-model="state.editGroupNameValue"
+                                               placeholder="Enter group name..."/>
+                                        <button class="btn btn-success" t-on-click="saveGroupName" title="Save">
+                                            <i class="fa fa-check"/>
+                                        </button>
+                                        <button class="btn btn-secondary" t-on-click="cancelEditGroupName" title="Cancel">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+                                </t>
+                                <t t-else="">
+                                    <!-- Display Mode -->
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <strong><t t-esc="state.activeConversation.display_name"/></strong>
+                                        <button t-if="state.activeConversation.is_admin"
+                                                class="btn btn-sm btn-link p-0" t-on-click="startEditGroupName" title="Rename Group">
+                                            <i class="fa fa-pencil"/>
+                                        </button>
+                                    </div>
+                                </t>
+                                <div t-if="state.activeConversation.group_description" class="text-muted small mt-1">
+                                    <t t-esc="state.activeConversation.group_description"/>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small text-muted">
+                                    <t t-esc="state.activeConversation.participant_count || 0"/> Participants
+                                    <t t-if="state.activeConversation.is_admin">
+                                        <span class="badge bg-success ms-2">Admin</span>
+                                    </t>
+                                    <t t-elif="!state.activeConversation.created_by_uid">
+                                        <button class="btn btn-sm btn-outline-primary ms-2" t-on-click="becomeAdmin">
+                                            Become Admin
+                                        </button>
+                                    </t>
+                                </label>
+                                <div class="o_participants_list">
+                                    <t t-foreach="state.activeConversation.participants || []" t-as="participant" t-key="participant">
+                                        <div class="o_participant_item d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <i class="fa fa-user me-2"/>
+                                                <span t-esc="getParticipantDisplay(participant)"/>
+                                            </div>
+                                            <button t-if="state.activeConversation.is_admin"
+                                                    class="btn btn-sm btn-link text-danger p-0"
+                                                    t-att-data-phone="participant"
+                                                    t-on-click="removeParticipant"
+                                                    title="Remove from group">
+                                                <i class="fa fa-times"/>
+                                            </button>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+
+                            <!-- Add Member Button (Admin only) -->
+                            <t t-if="state.activeConversation.is_admin">
+                                <button t-if="!state.showAddMember"
+                                        class="btn btn-outline-success btn-sm w-100 mb-2"
+                                        t-on-click="toggleAddMember">
+                                    <i class="fa fa-user-plus me-2"/>Add Member
+                                </button>
+
+                                <!-- Add Member Panel -->
+                                <div t-if="state.showAddMember" class="o_add_member_panel mb-3 p-2 border rounded">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong class="small">Add New Member</strong>
+                                        <button class="btn btn-sm btn-link p-0" t-on-click="toggleAddMember">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+
+                                    <!-- Search Contacts -->
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text"><i class="fa fa-search"/></span>
+                                        <input type="text"
+                                               class="form-control"
+                                               placeholder="Search contacts..."
+                                               t-att-value="state.searchQuery"
+                                               t-on-input="searchContacts"/>
+                                    </div>
+
+                                    <!-- Loading -->
+                                    <div t-if="state.loadingContacts" class="text-center p-2">
+                                        <i class="fa fa-spinner fa-spin"/> Loading...
+                                    </div>
+
+                                    <!-- Contact Results -->
+                                    <div t-elif="state.contactResults.length" class="o_add_member_contacts" style="max-height: 150px; overflow-y: auto;">
+                                        <t t-foreach="state.contactResults" t-as="contact" t-key="contact.id">
+                                            <div class="o_contact_item small py-1 px-2"
+                                                 t-att-data-phone="contact.phone"
+                                                 t-on-click="addMemberFromContact"
+                                                 style="cursor: pointer;">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fa fa-user-circle me-2"/>
+                                                    <div class="flex-grow-1">
+                                                        <div t-esc="contact.name"/>
+                                                        <small class="text-muted" t-esc="contact.display_phone or contact.phone"/>
+                                                    </div>
+                                                    <i class="fa fa-plus-circle text-success"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <!-- Manual Phone Entry -->
+                                    <div class="mt-2">
+                                        <label class="small text-muted">Or enter phone number:</label>
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text">+</span>
+                                            <input type="tel"
+                                                   class="form-control"
+                                                   placeholder="91xxxxxxxxxx"
+                                                   t-model="state.addMemberPhone"/>
+                                            <button class="btn btn-success" t-on-click="addMemberFromPhone">
+                                                <i class="fa fa-plus"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Message Permission Settings (Admin only) -->
+                            <t t-if="state.activeConversation.is_admin">
+                                <div class="mb-2 d-flex align-items-center justify-content-between small">
+                                    <span class="text-muted">
+                                        <i class="fa fa-shield me-1"/>Who can send:
+                                    </span>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-xs py-0 px-2"
+                                                style="font-size: 11px;"
+                                                t-attf-class="btn-#{state.activeConversation.admin_only ? 'outline-secondary' : 'success'}"
+                                                t-on-click="() => this.updateGroupSettings(false)"
+                                                title="All members can send messages">
+                                            <i class="fa fa-users"/>
+                                        </button>
+                                        <button class="btn btn-xs py-0 px-2"
+                                                style="font-size: 11px;"
+                                                t-attf-class="btn-#{state.activeConversation.admin_only ? 'warning' : 'outline-secondary'}"
+                                                t-on-click="() => this.updateGroupSettings(true)"
+                                                title="Only admins can send messages">
+                                            <i class="fa fa-lock"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <!-- Leave Group Button -->
+                            <t t-if="state.activeConversation.is_admin">
+                                <button class="btn btn-outline-danger btn-sm w-100" t-on-click="leaveGroup">
+                                    <i class="fa fa-sign-out me-2"/>Leave Group
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <button class="btn btn-outline-secondary btn-sm w-100" t-on-click="leaveGroup">
+                                    <i class="fa fa-sign-out me-2"/>Leave Group
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- Messages Container -->
+                    <div class="o_messages_container" t-ref="messagesContainer">
+                        <t t-if="state.loadingMessages">
+                            <div class="text-center p-4">
+                                <i class="fa fa-spinner fa-spin"/>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <t t-foreach="state.messages" t-as="message" t-key="message.id">
+                                <!-- Date Separator -->
+                                <t t-if="shouldShowDateSeparator(message_index)">
+                                    <div class="o_date_separator">
+                                        <span t-esc="formatDateSeparator(message.timestamp)"/>
+                                    </div>
+                                </t>
+
+                                <!-- Message Bubble -->
+                                <div class="o_message_wrapper"
+                                     t-att-class="{'outgoing': message.direction === 'outgoing', 'incoming': message.direction === 'incoming'}"
+                                     t-att-data-message-id="message.id"
+                                     t-on-contextmenu="(ev) => showContextMenu(ev, message)">
+                                    <div class="o_message_bubble">
+                                        <!-- Deleted Message Placeholder -->
+                                        <t t-if="message.is_deleted">
+                                            <div class="o_message_deleted">
+                                                <i class="fa fa-ban me-1"/>
+                                                <em>This message was deleted</em>
+                                            </div>
+                                        </t>
+                                        <t t-else="">
+                                            <!-- Forwarded Indicator -->
+                                            <t t-if="message.is_forwarded">
+                                                <div class="o_message_forwarded">
+                                                    <i class="fa fa-share me-1"/>Forwarded
+                                                </div>
+                                            </t>
+                                            <!-- Author Name for Group Messages -->
+                                            <t t-if="message.is_group and message.direction === 'incoming' and message.author_display">
+                                                <div class="o_message_author" t-esc="message.author_display"/>
+                                            </t>
+                                            <!-- Quoted/Reply Message -->
+                                            <t t-if="message.reply_to">
+                                                <div class="o_quoted_message" t-on-click="() => scrollToMessage(message.reply_to.id)">
+                                                    <div class="o_quoted_author" t-out="message.reply_to.author_display or (message.reply_to.direction === 'outgoing' ? 'You' : 'Them')"/>
+                                                    <div class="o_quoted_preview" t-out="message.reply_to.preview"/>
+                                                </div>
+                                            </t>
+                                            <!-- Media Content -->
+                                            <t t-if="message.has_media">
+                                                <div class="o_message_media">
+                                                    <!-- Image -->
+                                                    <t t-if="message.media_mimetype and message.media_mimetype.startsWith('image/')">
+                                                        <img t-if="message.media_url" t-att-src="message.media_url"
+                                                             class="o_media_image" t-on-click="() => this.openMedia(message)"/>
+                                                        <img t-elif="message.media_data"
+                                                             t-att-src="'data:' + message.media_mimetype + ';base64,' + message.media_data"
+                                                             class="o_media_image" t-on-click="() => this.openMedia(message)"/>
+                                                        <div t-else="" class="o_media_placeholder">
+                                                            <i class="fa fa-image"/>
+                                                            <span>Image</span>
+                                                        </div>
+                                                    </t>
+                                                    <!-- Video -->
+                                                    <t t-elif="message.media_mimetype and message.media_mimetype.startsWith('video/')">
+                                                        <div class="o_media_video_placeholder">
+                                                            <i class="fa fa-play-circle"/>
+                                                            <span t-esc="message.media_filename or 'Video'"/>
+                                                        </div>
+                                                    </t>
+                                                    <!-- Audio -->
+                                                    <t t-elif="message.media_mimetype and message.media_mimetype.startsWith('audio/')">
+                                                        <div class="o_media_audio">
+                                                            <i class="fa fa-microphone"/>
+                                                            <span t-esc="message.media_filename or 'Audio'"/>
+                                                        </div>
+                                                    </t>
+                                                    <!-- Document -->
+                                                    <t t-else="">
+                                                        <div class="o_media_document">
+                                                            <i t-att-class="'fa ' + getFileIcon(message.media_mimetype)"/>
+                                                            <span t-esc="message.media_filename or 'Document'"/>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                            <!-- Text Body -->
+                                            <div t-if="message.body" class="o_message_body" t-esc="message.body"/>
+                                            <!-- Reactions -->
+                                            <t t-if="message.reactions and Object.keys(message.reactions).length > 0">
+                                                <div class="o_message_reactions">
+                                                    <t t-foreach="Object.entries(message.reactions)" t-as="reaction" t-key="reaction[0]">
+                                                        <span class="o_reaction" t-on-click="() => reactToMessage(message, reaction[0])">
+                                                            <span t-out="reaction[0]"/>
+                                                            <span class="o_reaction_count" t-out="reaction[1]"/>
+                                                        </span>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                        </t>
+                                        <!-- Message Meta -->
+                                        <div class="o_message_meta">
+                                            <!-- Edited indicator -->
+                                            <t t-if="message.is_edited">
+                                                <span class="o_message_edited">Edited</span>
+                                            </t>
+                                            <span class="o_message_time" t-esc="formatMessageTime(message.timestamp)"/>
+                                            <!-- Star Icon -->
+                                            <t t-if="message.is_starred">
+                                                <span class="o_message_starred">
+                                                    <i class="fa fa-star"/>
+                                                </span>
+                                            </t>
+                                            <t t-if="message.direction === 'outgoing' and !message.is_deleted">
+                                                <span t-att-class="'o_message_status status-' + (message.state || 'pending')">
+                                                    <t t-if="message.state === 'failed'">
+                                                        <i class="fa fa-exclamation-circle tick"/>
+                                                    </t>
+                                                    <t t-elif="message.state === 'pending'">
+                                                        <i class="fa fa-clock-o tick"/>
+                                                    </t>
+                                                    <t t-elif="message.state === 'sent'">
+                                                        <span class="tick">✓</span>
+                                                    </t>
+                                                    <t t-elif="message.state === 'delivered'">
+                                                        <span class="tick tick-double">✓✓</span>
+                                                    </t>
+                                                    <t t-elif="message.state === 'read'">
+                                                        <span class="tick tick-double">✓✓</span>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <span class="tick">✓</span>
+                                                    </t>
+                                                </span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+
+                    <!-- Message Context Menu -->
+                    <t t-if="state.showMessageContextMenu and state.contextMenuMessage">
+                        <div class="o_message_context_menu"
+                             t-attf-style="top: #{state.contextMenuPosition.y}px; left: #{state.contextMenuPosition.x}px;">
+                            <div class="o_context_menu_item" t-on-click="() => startReply(state.contextMenuMessage)">
+                                <i class="fa fa-reply me-2"/>Reply
+                            </div>
+                            <div class="o_context_menu_item" t-on-click="() => reactToMessage(state.contextMenuMessage, '👍')">
+                                <i class="fa fa-thumbs-up me-2"/>React 👍
+                            </div>
+                            <div class="o_context_menu_item" t-on-click="() => showForwardDialog(state.contextMenuMessage)">
+                                <i class="fa fa-share me-2"/>Forward
+                            </div>
+                            <div class="o_context_menu_item" t-on-click="() => starMessage(state.contextMenuMessage)">
+                                <i t-attf-class="fa #{state.contextMenuMessage.is_starred ? 'fa-star' : 'fa-star-o'} me-2"/>
+                                <t t-if="state.contextMenuMessage.is_starred">Unstar</t>
+                                <t t-else="">Star</t>
+                            </div>
+                            <t t-if="state.contextMenuMessage.direction === 'outgoing' and !state.contextMenuMessage.is_deleted">
+                                <div class="o_context_menu_item" t-on-click="() => startEditMessage(state.contextMenuMessage)">
+                                    <i class="fa fa-pencil me-2"/>Edit
+                                </div>
+                            </t>
+                            <div class="o_context_menu_divider"/>
+                            <div class="o_context_menu_item" t-on-click="() => deleteMessage(state.contextMenuMessage, 'me')">
+                                <i class="fa fa-trash me-2"/>Delete for me
+                            </div>
+                            <t t-if="state.contextMenuMessage.direction === 'outgoing' and !state.contextMenuMessage.is_deleted">
+                                <div class="o_context_menu_item o_danger" t-on-click="() => deleteMessage(state.contextMenuMessage, 'everyone')">
+                                    <i class="fa fa-trash me-2"/>Delete for everyone
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+
+                    <!-- Forward Dialog -->
+                    <t t-if="state.showForwardDialog">
+                        <div class="o_forward_dialog_backdrop" t-on-click="closeForwardDialog"/>
+                        <div class="o_forward_dialog">
+                            <div class="o_forward_dialog_header">
+                                <h6>Forward message to:</h6>
+                                <button class="btn btn-sm btn-link" t-on-click="closeForwardDialog">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                            <div class="o_forward_dialog_list">
+                                <t t-foreach="state.conversations" t-as="conv" t-key="conv.id">
+                                    <div class="o_forward_conversation_item"
+                                         t-att-class="{'selected': state.forwardSelectedConversations.includes(conv.id)}"
+                                         t-on-click="() => toggleForwardConversation(conv.id)">
+                                        <div class="o_checkbox">
+                                            <i t-attf-class="fa #{state.forwardSelectedConversations.includes(conv.id) ? 'fa-check-square' : 'fa-square-o'}"/>
+                                        </div>
+                                        <span t-out="conv.display_name"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="o_forward_dialog_footer">
+                                <button class="btn btn-sm btn-primary" t-on-click="forwardMessage"
+                                        t-att-disabled="state.forwardSelectedConversations.length === 0">
+                                    Forward (<t t-out="state.forwardSelectedConversations.length"/>)
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Block Contact Confirmation Dialog -->
+                    <t t-if="state.showBlockConfirmDialog">
+                        <div class="o_confirm_dialog_backdrop" t-on-click="cancelBlockDialog"/>
+                        <div class="o_confirm_dialog">
+                            <div class="o_confirm_dialog_header">
+                                <i class="fa fa-ban text-danger me-2"/>
+                                <t t-if="state.activeConversation.is_blocked">Unblock Contact</t>
+                                <t t-else="">Block Contact</t>
+                            </div>
+                            <div class="o_confirm_dialog_body">
+                                <t t-if="state.activeConversation.is_blocked">
+                                    <p>Do you want to unblock <strong t-esc="state.activeConversation.display_name"/>?</p>
+                                    <p class="text-muted small">You will start receiving messages from this contact again.</p>
+                                </t>
+                                <t t-else="">
+                                    <p>Do you want to block <strong t-esc="state.activeConversation.display_name"/>?</p>
+                                    <p class="text-muted small">Blocked contacts will not be able to send you messages or calls.</p>
+                                </t>
+                            </div>
+                            <div class="o_confirm_dialog_footer">
+                                <button class="btn btn-sm btn-secondary" t-on-click="cancelBlockDialog">Cancel</button>
+                                <button class="btn btn-sm btn-danger" t-on-click="confirmBlockContact">
+                                    <t t-if="state.activeConversation.is_blocked">Unblock</t>
+                                    <t t-else="">Block</t>
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Clear Chat Confirmation Dialog -->
+                    <t t-if="state.showClearConfirmDialog">
+                        <div class="o_confirm_dialog_backdrop" t-on-click="cancelClearDialog"/>
+                        <div class="o_confirm_dialog">
+                            <div class="o_confirm_dialog_header">
+                                <i class="fa fa-eraser text-warning me-2"/>
+                                Clear Chat
+                            </div>
+                            <div class="o_confirm_dialog_body">
+                                <p>Clear all messages in <strong t-esc="state.activeConversation.display_name"/>?</p>
+                                <p class="text-muted small">This action cannot be undone. All messages will be deleted permanently.</p>
+                            </div>
+                            <div class="o_confirm_dialog_footer">
+                                <button class="btn btn-sm btn-secondary" t-on-click="cancelClearDialog">Cancel</button>
+                                <button class="btn btn-sm btn-warning" t-on-click="confirmClearChat">Clear Chat</button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Delete Chat Confirmation Dialog -->
+                    <t t-if="state.showDeleteConfirmDialog">
+                        <div class="o_confirm_dialog_backdrop" t-on-click="cancelDeleteDialog"/>
+                        <div class="o_confirm_dialog">
+                            <div class="o_confirm_dialog_header">
+                                <i class="fa fa-trash text-danger me-2"/>
+                                Delete Chat
+                            </div>
+                            <div class="o_confirm_dialog_body">
+                                <p>Delete chat with <strong t-esc="state.activeConversation.display_name"/>?</p>
+                                <p class="text-muted small">This action cannot be undone. The entire conversation and all messages will be deleted permanently.</p>
+                            </div>
+                            <div class="o_confirm_dialog_footer">
+                                <button class="btn btn-sm btn-secondary" t-on-click="cancelDeleteDialog">Cancel</button>
+                                <button class="btn btn-sm btn-danger" t-on-click="confirmDeleteChat">Delete</button>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Drag and Drop Overlay -->
+                    <t t-if="state.isDragging">
+                        <div class="o_drag_overlay">
+                            <div class="o_drag_content">
+                                <i class="fa fa-cloud-upload fa-3x"/>
+                                <div>Drop files here to send</div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Composer -->
+                    <div class="o_chat_composer">
+                        <!-- Reply Preview -->
+                        <t t-if="state.replyingTo">
+                            <div class="o_reply_preview">
+                                <div class="o_reply_content">
+                                    <div class="o_reply_author">
+                                        Replying to <t t-out="state.replyingTo.author_display or (state.replyingTo.direction === 'outgoing' ? 'yourself' : 'them')"/>
+                                    </div>
+                                    <div class="o_reply_body" t-out="state.replyingTo.body?.substring(0, 100) || '[Media]'"/>
+                                </div>
+                                <button class="o_cancel_reply" t-on-click="cancelReply">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                        <!-- File Preview -->
+                        <t t-if="state.selectedFile">
+                            <div class="o_file_preview">
+                                <div class="o_file_info">
+                                    <i t-att-class="'fa ' + getFileIcon(state.selectedFile.type)"/>
+                                    <span t-esc="state.selectedFile.name"/>
+                                    <span class="o_file_size" t-esc="formatFileSize(state.selectedFile.size)"/>
+                                </div>
+                                <button class="o_remove_file" t-on-click="removeSelectedFile">
+                                    <i class="fa fa-times"/>
+                                </button>
+                            </div>
+                        </t>
+                        <div class="o_composer_input_wrapper">
+                            <!-- Emoji Picker Button -->
+                            <div class="o_emoji_picker_container">
+                                <button class="o_emoji_button" t-on-click="toggleEmojiPicker" title="Emoji">
+                                    <span>😊</span>
+                                </button>
+                                <!-- Emoji Picker Panel -->
+                                <div t-if="state.showEmojiPicker" class="o_emoji_picker">
+                                    <div class="o_emoji_categories">
+                                        <t t-foreach="emojiCategories" t-as="cat" t-key="cat.id">
+                                            <button class="o_emoji_category_btn"
+                                                    t-att-class="{'active': state.emojiCategory === cat.id}"
+                                                    t-on-click="() => this.selectEmojiCategory(cat.id)"
+                                                    t-att-title="cat.label">
+                                                <span t-esc="cat.icon"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                    <div class="o_emoji_grid">
+                                        <t t-foreach="currentEmojis" t-as="emoji" t-key="emoji_index">
+                                            <button class="o_emoji_item" t-on-click="() => this.insertEmoji(emoji)">
+                                                <span t-esc="emoji"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="o_attach_button" t-on-click="triggerFileInput" title="Attach file">
+                                <i class="fa fa-paperclip"/>
+                            </button>
+                            <input type="file"
+                                   t-ref="fileInput"
+                                   class="d-none"
+                                   accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+                                   t-on-change="onFileSelected"/>
+                            <!-- Voice Recording UI -->
+                            <t t-if="state.isRecording">
+                                <div class="o_recording_bar">
+                                    <button class="o_cancel_recording" t-on-click="cancelRecording" title="Cancel">
+                                        <i class="fa fa-trash"/>
+                                    </button>
+                                    <div class="o_recording_indicator">
+                                        <span class="o_recording_dot"/>
+                                        <span class="o_recording_duration" t-out="formatRecordingDuration(state.recordingDuration)"/>
+                                    </div>
+                                    <div class="o_recording_waveform">
+                                        <span class="wave"/><span class="wave"/><span class="wave"/>
+                                        <span class="wave"/><span class="wave"/>
+                                    </div>
+                                    <button class="o_stop_recording" t-on-click="stopRecording" title="Stop">
+                                        <i class="fa fa-stop"/>
+                                    </button>
+                                </div>
+                            </t>
+                            <!-- Voice Message Preview (after recording) -->
+                            <t t-elif="state.audioBlob">
+                                <div class="o_voice_preview">
+                                    <button class="o_cancel_voice" t-on-click="cancelRecording" title="Delete">
+                                        <i class="fa fa-trash"/>
+                                    </button>
+                                    <div class="o_voice_info">
+                                        <i class="fa fa-microphone me-2"/>
+                                        <span>Voice message (<t t-out="formatRecordingDuration(state.recordingDuration)"/>)</span>
+                                    </div>
+                                    <button class="o_send_voice" t-on-click="sendVoiceMessage" title="Send">
+                                        <i class="fa fa-paper-plane"/>
+                                    </button>
+                                </div>
+                            </t>
+                            <!-- Normal Input -->
+                            <t t-else="">
+                                <textarea
+                                    t-ref="messageInput"
+                                    class="o_composer_input"
+                                    t-att-placeholder="state.replyingTo ? 'Type your reply...' : (state.selectedFile ? 'Add a caption...' : 'Type a message...')"
+                                    rows="1"
+                                    t-on-keydown="sendMessage"
+                                    t-on-input="onMessageInput"
+                                    t-on-paste="onPaste"/>
+                                <!-- Microphone button (when empty) or Send button -->
+                                <button class="o_mic_button" t-on-click="startRecording" title="Record voice message"
+                                        t-if="!state.selectedFile">
+                                    <i class="fa fa-microphone"/>
+                                </button>
+                                <button class="o_send_button" t-on-click="sendMessage">
+                                    <i class="fa fa-paper-plane"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Empty State -->
+                <t t-else="">
+                    <div class="o_empty_chat">
+                        <i class="fa fa-whatsapp text-success"/>
+                        <h4>WhatsApp Chat</h4>
+                        <p class="text-muted">Select a conversation or start a new one</p>
+                    </div>
+                </t>
+            </div>
+
+            <!-- QR Code Login Modal -->
+            <t t-if="state.showQRModal">
+                <div class="o_qr_modal_backdrop" t-on-click="closeQRModal"/>
+                <div class="o_qr_modal">
+                    <div class="o_qr_modal_header">
+                        <h5>
+                            <i class="fa fa-whatsapp text-success me-2"/>
+                            Connect WhatsApp
+                        </h5>
+                        <button class="btn btn-sm btn-link" t-on-click="closeQRModal">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                    <div class="o_qr_modal_body">
+                        <t t-if="state.qrLoading">
+                            <div class="text-center p-4">
+                                <i class="fa fa-spinner fa-spin fa-2x mb-3"/>
+                                <p>Loading QR Code...</p>
+                            </div>
+                        </t>
+                        <t t-elif="state.qrError">
+                            <div class="text-center p-4">
+                                <i class="fa fa-exclamation-circle fa-3x text-warning mb-3"/>
+                                <p class="text-danger mb-3" t-esc="state.qrError"/>
+                                <div class="d-flex flex-column gap-2 align-items-center">
+                                    <button class="btn btn-primary" t-on-click="refreshQRCode">
+                                        <i class="fa fa-refresh me-2"/>Retry
+                                    </button>
+                                    <button class="btn btn-outline-secondary" t-on-click="openWhatsAppConfig">
+                                        <i class="fa fa-cog me-2"/>Go to Settings
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-3">
+                                    Make sure the WhatsApp bot server is running and configured properly.
+                                </p>
+                            </div>
+                        </t>
+                        <t t-elif="state.qrConnected">
+                            <div class="text-center p-4 text-success">
+                                <i class="fa fa-check-circle fa-3x mb-3"/>
+                                <h5>Connected!</h5>
+                                <p>WhatsApp is now connected.</p>
+                                <button class="btn btn-success" t-on-click="closeQRModal">
+                                    Continue
+                                </button>
+                            </div>
+                        </t>
+                        <t t-elif="state.qrCode">
+                            <div class="text-center">
+                                <img t-att-src="state.qrCode" alt="WhatsApp QR Code" class="o_qr_image"/>
+                                <div class="mt-3">
+                                    <p class="text-muted mb-1">Scan this QR code with WhatsApp</p>
+                                    <ol class="text-start small text-muted">
+                                        <li>Open WhatsApp on your phone</li>
+                                        <li>Tap Menu or Settings and select Linked Devices</li>
+                                        <li>Point your phone at this screen to scan the QR code</li>
+                                    </ol>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm mt-2" t-on-click="refreshQRCode">
+                                    <i class="fa fa-refresh me-2"/>Refresh QR Code
+                                </button>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="text-center p-4">
+                                <i class="fa fa-qrcode fa-3x mb-3 text-muted"/>
+                                <p>Click the button below to get QR code</p>
+                                <button class="btn btn-success" t-on-click="refreshQRCode">
+                                    <i class="fa fa-qrcode me-2"/>Get QR Code
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

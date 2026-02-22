@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<templates xml:space="preserve">
+
+	<t t-name="muk_web_appsbar.AppsBar">
+		<div class="mk_apps_sidebar_panel">
+			<div class="mk_apps_sidebar">
+				<div class="mk_sidebar_toggle_wrap">
+					<button class="mk_sidebar_toggle_btn" t-on-click="toggleSidebar" title="Toggle Sidebar">
+						<i t-attf-class="fa {{ state.collapsed ? 'fa-angle-right' : 'fa-angle-left' }}"/>
+					</button>
+				</div>
+				<ul class="mk_apps_sidebar_menu">
+				    <t t-foreach="this.appMenuService.getAppsMenuItems()" t-as="app" t-key="app.id">
+			            <li t-attf-class="nav-item {{ app.id === this.appMenuService.getCurrentApp()?.id ? 'active' : '' }}">
+			            	<a
+			            		t-att-href="app.href"
+		            			t-att-data-menu-id="app.id"
+		            			t-att-data-menu-xmlid="app.xmlid"
+		            			t-att-data-action-id="app.actionID"
+								t-on-click.prevent="() => app.action()"
+		            			class="nav-link"
+		            			role="menuitem"
+		            		>
+			                	<img
+			                		t-if="app.webIconData"
+			                		class="mk_apps_sidebar_icon"
+			                		t-att-src="app.webIconData"
+			                	/>
+			                	<img
+			                		t-else=""
+			                		class="mk_apps_sidebar_icon"
+			                		src="/base/static/description/icon.png"
+			                	/>
+						        <span class="mk_apps_sidebar_name">
+						            <t t-out="app.name"/>
+						        </span>
+			            	 </a>
+			            </li>
+			    	</t>
+				</ul>
+				<div t-if="sidebarImageUrl" class="mk_apps_sidebar_logo_wrap p-0">
+
+					<img src="muk_web_appsbar/static/src/webclient/appsbar/scopex_logo.jpg" class="mk_apps_sidebar_logo"/>
+				</div>
+			</div>
+		</div>
+	</t>
+
+</templates>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Assets are now defined in __manifest__.py under the 'assets' key.
+    This file is kept for backwards compatibility but is no longer used.
+
+    In Odoo 17+, assets should be declared in __manifest__.py like this:
+    'assets': {
+        'web.assets_backend': [
+            'mail_bot_management/static/src/css/mail_bot.css',
+            'mail_bot_management/static/src/js/mail_bot_client_action.js',
+            'mail_bot_management/static/src/xml/mail_bot_client_action.xml',
+        ],
+    },
+-->
+<odoo>
+</odoo>

@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="mail_bot_management.MailBotClientAction">
+        <div class="mail-bot-container d-flex h-100">
+            <!-- Sidebar -->
+            <div class="mail-bot-sidebar">
+                <div class="sidebar-compose p-3">
+                    <button class="btn btn-compose w-100" t-on-click="onCompose">
+                        <i class="fa fa-plus me-2"/>Compose
+                    </button>
+                </div>
+
+                <ul class="nav flex-column folder-list">
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('inbox')"
+                               href="#" t-on-click.prevent="onClickInbox">
+                                <i class="fa fa-inbox me-3"/>
+                                <span class="flex-grow-1">Inbox</span>
+                                <span t-if="state.counts.inbox > 0" class="badge-count" t-esc="state.counts.inbox"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('starred')"
+                               href="#" t-on-click.prevent="onClickStarred">
+                                <i class="fa fa-star me-3"/>
+                                <span class="flex-grow-1">Starred</span>
+                                <span t-if="state.counts.starred > 0" class="badge-count" t-esc="state.counts.starred"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('snoozed')"
+                               href="#" t-on-click.prevent="onClickSnoozed">
+                                <i class="fa fa-clock-o me-3"/>
+                                <span class="flex-grow-1">Snoozed</span>
+                                <span t-if="state.counts.snoozed > 0" class="badge-count" t-esc="state.counts.snoozed"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('important')"
+                               href="#" t-on-click.prevent="onClickImportant">
+                                <i class="fa fa-bookmark me-3"/>
+                                <span class="flex-grow-1">Important</span>
+                                <span t-if="state.counts.important > 0" class="badge-count" t-esc="state.counts.important"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('sent')"
+                               href="#" t-on-click.prevent="onClickSent">
+                                <i class="fa fa-paper-plane me-3"/>
+                                <span class="flex-grow-1">Sent</span>
+                                <span t-if="state.counts.sent > 0" class="badge-count" t-esc="state.counts.sent"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('draft')"
+                               href="#" t-on-click.prevent="onClickDraft">
+                                <i class="fa fa-file-text-o me-3"/>
+                                <span class="flex-grow-1">Drafts</span>
+                                <span t-if="state.counts.draft > 0" class="badge-count" t-esc="state.counts.draft"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('allmail')"
+                               href="#" t-on-click.prevent="onClickAllMail">
+                                <i class="fa fa-envelope me-3"/>
+                                <span class="flex-grow-1">All Mail</span>
+                                <span t-if="state.counts.allmail > 0" class="badge-count" t-esc="state.counts.allmail"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('spam')"
+                               href="#" t-on-click.prevent="onClickSpam">
+                                <i class="fa fa-exclamation-circle me-3"/>
+                                <span class="flex-grow-1">Spam</span>
+                                <span t-if="state.counts.spam > 0" class="badge-count" t-esc="state.counts.spam"/>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a t-att-class="getFolderClass('trash')"
+                               href="#" t-on-click.prevent="onClickTrash">
+                                <i class="fa fa-trash me-3"/>
+                                <span class="flex-grow-1">Trash</span>
+                                <span t-if="state.counts.trash > 0" class="badge-count" t-esc="state.counts.trash"/>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Main Content -->
+            <div class="mail-bot-main flex-grow-1 d-flex flex-column">
+                <!-- Show Mail List View -->
+                <t t-if="!state.selectedMessage">
+                    <!-- Toolbar -->
+                    <div class="mail-toolbar d-flex align-items-center p-2 border-bottom">
+                        <!-- Select All Checkbox with Dropdown -->
+                        <div class="select-all-dropdown me-1">
+                            <div class="d-flex align-items-center">
+                                <input type="checkbox" class="form-check-input"
+                                       t-att-checked="isAllSelected"
+                                       t-on-change="onSelectAllChange"
+                                       title="Select"/>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-link dropdown-toggle p-0 ms-1" type="button" data-bs-toggle="dropdown">
+                                        <i class="fa fa-caret-down text-muted"/>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-start">
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectAllPage">All</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectNone">None</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectRead">Read</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectUnread">Unread</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectStarred">Starred</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onSelectUnstarred">Unstarred</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Actions - Show when items selected -->
+                        <t t-if="state.selectedIds.length > 0">
+                            <div class="bulk-actions d-flex align-items-center">
+                                <!-- Archive / Unarchive -->
+                                <t t-if="state.activeFolder === 'allmail'">
+                                    <button class="btn btn-sm btn-icon" t-on-click="onBulkUnarchive" title="Move to Inbox">
+                                        <i class="fa fa-inbox"/>
+                                    </button>
+                                </t>
+                                <t t-elif="state.activeFolder === 'inbox' or state.activeFolder === 'starred' or state.activeFolder === 'important'">
+                                    <button class="btn btn-sm btn-icon" t-on-click="onBulkArchive" title="Archive">
+                                        <i class="fa fa-archive"/>
+                                    </button>
+                                </t>
+
+                                <!-- Report Spam -->
+                                <t t-if="state.activeFolder !== 'spam' and state.activeFolder !== 'trash' and state.activeFolder !== 'draft' and state.activeFolder !== 'sent'">
+                                    <button class="btn btn-sm btn-icon" t-on-click="onBulkMarkSpam" title="Report spam">
+                                        <i class="fa fa-exclamation-circle"/>
+                                    </button>
+                                </t>
+
+                                <!-- Delete -->
+                                <button class="btn btn-sm btn-icon" t-on-click="onBulkDelete" title="Delete">
+                                    <i class="fa fa-trash-o"/>
+                                </button>
+
+                                <div class="toolbar-separator"/>
+
+                                <!-- Mark as read/unread dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Mark as">
+                                        <i class="fa fa-envelope-o"/>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkRead"><i class="fa fa-envelope-open-o me-2"/>Mark as read</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkUnread"><i class="fa fa-envelope me-2"/>Mark as unread</a></li>
+                                        <li><hr class="dropdown-divider"/></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkStar"><i class="fa fa-star me-2"/>Star</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkUnstar"><i class="fa fa-star-o me-2"/>Remove star</a></li>
+                                        <li><hr class="dropdown-divider"/></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkImportant"><i class="fa fa-bookmark me-2"/>Mark as important</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkUnmarkImportant"><i class="fa fa-bookmark-o me-2"/>Not important</a></li>
+                                    </ul>
+                                </div>
+
+                                <!-- Snooze dropdown -->
+                                <t t-if="state.activeFolder !== 'trash' and state.activeFolder !== 'spam' and state.activeFolder !== 'draft' and state.activeFolder !== 'sent'">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Snooze">
+                                            <i class="fa fa-clock-o"/>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onBulkSnooze('later_today')"><i class="fa fa-sun-o me-2"/>Later today</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onBulkSnooze('tomorrow')"><i class="fa fa-arrow-right me-2"/>Tomorrow</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onBulkSnooze('next_week')"><i class="fa fa-calendar me-2"/>Next week</a></li>
+                                        </ul>
+                                    </div>
+                                </t>
+
+                                <!-- Move to dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Move to">
+                                        <i class="fa fa-folder-o"/>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onBulkMoveTo('inbox')"><i class="fa fa-inbox me-2"/>Move to Inbox</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkArchive"><i class="fa fa-archive me-2"/>Archive</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkSpam"><i class="fa fa-exclamation-circle me-2"/>Spam</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkDelete"><i class="fa fa-trash-o me-2"/>Trash</a></li>
+                                    </ul>
+                                </div>
+
+                                <!-- Labels dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Labels">
+                                        <i class="fa fa-tag"/>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkStar"><i class="fa fa-star me-2"/>Starred</a></li>
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkImportant"><i class="fa fa-bookmark me-2"/>Important</a></li>
+                                    </ul>
+                                </div>
+
+                                <!-- More actions dropdown -->
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="More">
+                                        <i class="fa fa-ellipsis-v"/>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkMarkRead"><i class="fa fa-check me-2"/>Mark all as read</a></li>
+                                        <t t-if="state.activeFolder === 'trash'">
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkRestore"><i class="fa fa-undo me-2"/>Restore</a></li>
+                                            <li><hr class="dropdown-divider"/></li>
+                                            <li><a class="dropdown-item text-danger" href="#" t-on-click.prevent="onBulkDeletePermanent"><i class="fa fa-times me-2"/>Delete forever</a></li>
+                                        </t>
+                                        <t t-if="state.activeFolder === 'spam'">
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="onBulkNotSpam"><i class="fa fa-check me-2"/>Not spam</a></li>
+                                        </t>
+                                    </ul>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- Refresh button when nothing selected -->
+                        <t t-if="state.selectedIds.length === 0">
+                            <button class="btn btn-sm btn-icon" t-on-click="onRefresh" title="Refresh">
+                                <i class="fa fa-refresh"/>
+                            </button>
+
+                            <!-- More options when nothing selected -->
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="More">
+                                    <i class="fa fa-ellipsis-v"/>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="onMarkAllAsRead"><i class="fa fa-check me-2"/>Mark all as read</a></li>
+                                </ul>
+                            </div>
+                        </t>
+
+                        <div class="flex-grow-1"/>
+
+                        <div class="search-container me-3">
+                            <div class="search-box">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white">
+                                        <i class="fa fa-search text-muted"/>
+                                    </span>
+                                    <input type="text" class="form-control"
+                                           placeholder="Search mail"
+                                           t-on-input="onSearchInput"
+                                           t-on-focus="onSearchFocus"
+                                           t-att-value="state.searchQuery"/>
+                                    <button class="btn btn-link search-options-btn" type="button" t-on-click="onToggleAdvancedSearch" title="Show search options">
+                                        <i class="fa fa-sliders"/>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Gmail-style Filter Chips -->
+                            <t t-if="state.showFilters">
+                                <div class="filter-chips">
+                                    <!-- From Filter -->
+                                    <div class="dropdown filter-chip-dropdown">
+                                        <button class="filter-chip" type="button" data-bs-toggle="dropdown" t-att-class="state.filters.from ? 'filter-chip active' : 'filter-chip'">
+                                            From <i class="fa fa-caret-down ms-1"/>
+                                        </button>
+                                        <div class="dropdown-menu filter-dropdown-menu">
+                                            <div class="p-2">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Enter sender email or name"
+                                                       t-att-value="state.filters.from"
+                                                       t-on-input="(e) => this.onFilterChange('from', e.target.value)"/>
+                                            </div>
+                                            <div class="dropdown-divider"/>
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="() => this.onClearFilter('from')">Clear</a>
+                                        </div>
+                                    </div>
+
+                                    <!-- To Filter -->
+                                    <div class="dropdown filter-chip-dropdown">
+                                        <button class="filter-chip" type="button" data-bs-toggle="dropdown" t-att-class="state.filters.to ? 'filter-chip active' : 'filter-chip'">
+                                            To <i class="fa fa-caret-down ms-1"/>
+                                        </button>
+                                        <div class="dropdown-menu filter-dropdown-menu">
+                                            <div class="p-2">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Enter recipient email"
+                                                       t-att-value="state.filters.to"
+                                                       t-on-input="(e) => this.onFilterChange('to', e.target.value)"/>
+                                            </div>
+                                            <div class="dropdown-divider"/>
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="() => this.onClearFilter('to')">Clear</a>
+                                        </div>
+                                    </div>
+
+                                    <!-- Date Filter -->
+                                    <div class="dropdown filter-chip-dropdown">
+                                        <button class="filter-chip" type="button" data-bs-toggle="dropdown" t-att-class="state.filters.date ? 'filter-chip active' : 'filter-chip'">
+                                            <t t-if="state.filters.date" t-esc="getDateFilterLabel()"/>
+                                            <t t-else="">Any time</t>
+                                            <i class="fa fa-caret-down ms-1"/>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', '')">Any time</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', 'today')">Today</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', 'yesterday')">Yesterday</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', 'week')">Last 7 days</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', 'month')">Last 30 days</a></li>
+                                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onFilterChange('date', 'year')">Last year</a></li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Has Attachment Filter -->
+                                    <button t-att-class="state.filters.hasAttachment ? 'filter-chip active' : 'filter-chip'"
+                                            t-on-click="() => this.onFilterChange('hasAttachment', !state.filters.hasAttachment)">
+                                        Has attachment
+                                    </button>
+
+                                    <!-- Is Unread Filter -->
+                                    <button t-att-class="state.filters.isUnread ? 'filter-chip active' : 'filter-chip'"
+                                            t-on-click="() => this.onFilterChange('isUnread', !state.filters.isUnread)">
+                                        Is unread
+                                    </button>
+
+                                    <!-- Is Starred Filter -->
+                                    <button t-att-class="state.filters.isStarred ? 'filter-chip active' : 'filter-chip'"
+                                            t-on-click="() => this.onFilterChange('isStarred', !state.filters.isStarred)">
+                                        Is starred
+                                    </button>
+
+                                    <!-- Clear All Filters -->
+                                    <t t-if="hasActiveFilters">
+                                        <button class="filter-chip filter-chip-clear" t-on-click="onClearAllFilters">
+                                            <i class="fa fa-times me-1"/>Clear all
+                                        </button>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+
+                        <t t-if="filteredMessages.length > 0">
+                            <div class="pagination-info text-muted me-2">
+                                <t t-esc="state.currentPage"/> of <t t-esc="totalPages"/>
+                            </div>
+                        </t>
+
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary" t-on-click="onPrevPage"
+                                    t-att-disabled="state.currentPage === 1">
+                                <i class="fa fa-chevron-left"/>
+                            </button>
+                            <button class="btn btn-outline-secondary" t-on-click="onNextPage"
+                                    t-att-disabled="state.currentPage >= totalPages">
+                                <i class="fa fa-chevron-right"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Message List -->
+                    <div class="mail-list-container flex-grow-1 overflow-auto">
+                        <t t-if="state.loading">
+                            <div class="text-center p-5">
+                                <i class="fa fa-spinner fa-spin fa-2x text-muted"/>
+                                <p class="mt-2 text-muted">Loading...</p>
+                            </div>
+                        </t>
+                        <t t-elif="paginatedMessages.length === 0">
+                            <div class="text-center p-5">
+                                <i class="fa fa-inbox fa-4x text-muted mb-3" style="display:block;"/>
+                                <p class="text-muted">No messages</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <table class="table table-hover mail-table mb-0">
+                                <tbody>
+                                    <t t-foreach="paginatedMessages" t-as="message" t-key="message.id">
+                                        <tr t-att-class="getRowClass(message) + (state.selectedIds.includes(message.id) ? ' selected' : '')"
+                                            t-att-data-message-id="message.id"
+                                            t-on-click="onMessageItemClick"
+                                            t-on-contextmenu="(ev) => this.onMessageContextMenu(ev, message)">
+                                            <td class="mail-checkbox-cell">
+                                                <input type="checkbox" class="form-check-input"
+                                                       t-on-click="onCheckboxClick"
+                                                       t-att-data-message-id="message.id"
+                                                       t-att-checked="isChecked(message.id)"/>
+                                            </td>
+                                            <td class="mail-star-cell" t-on-click="onToggleStarClick"
+                                                t-att-data-message-id="message.id">
+                                                <i t-att-class="getStarClass(message)"/>
+                                            </td>
+                                            <td class="mail-sender-cell">
+                                                <span t-att-class="getBoldClass(message)" t-esc="message.display_name"/>
+                                            </td>
+                                            <td class="mail-subject-cell">
+                                                <span t-att-class="'mail-subject ' + getBoldClass(message)">
+                                                    <t t-if="message.subject" t-esc="message.subject"/>
+                                                    <t t-else="">(No Subject)</t>
+                                                </span>
+                                                <span class="mail-preview text-muted ms-2" t-esc="message.preview"/>
+                                            </td>
+                                            <td class="mail-date-cell text-end text-muted" t-esc="formatDate(message.display_date)"/>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- Full Screen Detail View -->
+                <t t-if="state.selectedMessage">
+                    <!-- Detail Toolbar -->
+                    <div class="mail-toolbar d-flex align-items-center p-2 border-bottom">
+                        <button class="btn btn-sm btn-icon" t-on-click="onBackToList" title="Back to list">
+                            <i class="fa fa-arrow-left"/>
+                        </button>
+
+                        <!-- Draft Actions - Send and Edit -->
+                        <t t-if="state.activeFolder === 'draft'">
+                            <div class="toolbar-separator"/>
+                            <button class="btn btn-sm btn-primary me-2" t-on-click="onSendDraft" title="Send this draft">
+                                <i class="fa fa-paper-plane me-1"/>Send
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="onEditDraft" title="Edit this draft">
+                                <i class="fa fa-edit me-1"/>Edit
+                            </button>
+                        </t>
+
+                        <div class="toolbar-separator"/>
+
+                        <!-- Quick Actions -->
+                        <t t-if="state.activeFolder !== 'trash'">
+                            <!-- Show Unarchive/Move to Inbox for archived messages or All Mail folder -->
+                            <t t-if="state.activeFolder === 'allmail' or (state.selectedMessage and state.selectedMessage.state === 'archived')">
+                                <button class="btn btn-sm btn-icon" t-on-click="onUnarchiveSelected" title="Move to Inbox">
+                                    <i class="fa fa-inbox"/>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <button class="btn btn-sm btn-icon" t-on-click="onArchiveSelected" title="Archive">
+                                    <i class="fa fa-archive"/>
+                                </button>
+                            </t>
+                            <button class="btn btn-sm btn-icon" t-on-click="onMarkSpamSelected" title="Report spam">
+                                <i class="fa fa-exclamation-circle"/>
+                            </button>
+                        </t>
+                        <button class="btn btn-sm btn-icon" t-on-click="onDeleteSelected" title="Delete">
+                            <i class="fa fa-trash-o"/>
+                        </button>
+
+                        <div class="toolbar-separator"/>
+
+                        <!-- Mark as read/unread -->
+                        <button class="btn btn-sm btn-icon" t-on-click="onToggleReadStatus" title="Mark as unread">
+                            <i class="fa fa-envelope"/>
+                        </button>
+
+                        <!-- Snooze -->
+                        <t t-if="state.activeFolder !== 'trash' and state.activeFolder !== 'spam'">
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Snooze">
+                                    <i class="fa fa-clock-o"/>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onSnoozeSelected('later_today')"><i class="fa fa-sun-o me-2"/>Later today</a></li>
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onSnoozeSelected('tomorrow')"><i class="fa fa-arrow-right me-2"/>Tomorrow</a></li>
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onSnoozeSelected('next_week')"><i class="fa fa-calendar me-2"/>Next week</a></li>
+                                </ul>
+                            </div>
+                        </t>
+
+                        <!-- Move to -->
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Move to">
+                                <i class="fa fa-folder-o"/>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="() => this.onMoveSelected('inbox')"><i class="fa fa-inbox me-2"/>Inbox</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onArchiveSelected"><i class="fa fa-archive me-2"/>Archive</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onMarkSpamSelected"><i class="fa fa-exclamation-circle me-2"/>Spam</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onDeleteSelected"><i class="fa fa-trash-o me-2"/>Trash</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Labels -->
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="Labels">
+                                <i class="fa fa-tag"/>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onToggleStarSelected">
+                                    <i t-att-class="state.selectedMessage.is_starred ? 'fa fa-star text-warning me-2' : 'fa fa-star-o me-2'"/>
+                                    <t t-if="state.selectedMessage.is_starred">Remove star</t>
+                                    <t t-else="">Star</t>
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onToggleImportantSelected">
+                                    <i t-att-class="state.selectedMessage.is_important ? 'fa fa-bookmark text-warning me-2' : 'fa fa-bookmark-o me-2'"/>
+                                    <t t-if="state.selectedMessage.is_important">Not important</t>
+                                    <t t-else="">Important</t>
+                                </a></li>
+                            </ul>
+                        </div>
+
+                        <!-- More actions -->
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" title="More">
+                                <i class="fa fa-ellipsis-v"/>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onReplyAll"><i class="fa fa-reply-all me-2"/>Reply all</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onForward"><i class="fa fa-share me-2"/>Forward</a></li>
+                                <li><hr class="dropdown-divider"/></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onPrintMessage"><i class="fa fa-print me-2"/>Print</a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.prevent="onDownloadMessage"><i class="fa fa-download me-2"/>Download message</a></li>
+                                <li><hr class="dropdown-divider"/></li>
+                                <t t-if="state.activeFolder === 'trash'">
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="onRestoreSelected"><i class="fa fa-undo me-2"/>Restore</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" t-on-click.prevent="onDeletePermanent"><i class="fa fa-times me-2"/>Delete forever</a></li>
+                                </t>
+                                <t t-if="state.activeFolder === 'spam'">
+                                    <li><a class="dropdown-item" href="#" t-on-click.prevent="onNotSpamSelected"><i class="fa fa-check me-2"/>Not spam</a></li>
+                                </t>
+                            </ul>
+                        </div>
+
+                        <div class="flex-grow-1"/>
+
+                        <!-- Message Navigation -->
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-icon" t-on-click="onPrevMessage"
+                                    t-att-disabled="currentMessageIndex === 0" title="Newer">
+                                <i class="fa fa-chevron-left"/>
+                            </button>
+                            <span class="text-muted mx-2 pagination-info">
+                                <t t-esc="currentMessageIndex + 1"/> of <t t-esc="filteredMessages.length"/>
+                            </span>
+                            <button class="btn btn-sm btn-icon" t-on-click="onNextMessage"
+                                    t-att-disabled="currentMessageIndex >= filteredMessages.length - 1" title="Older">
+                                <i class="fa fa-chevron-right"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Full Screen Message Content -->
+                    <div class="mail-detail-fullscreen flex-grow-1 overflow-auto">
+                        <div class="mail-detail-content">
+                            <!-- Subject -->
+                            <h4 class="mail-detail-subject">
+                                <t t-if="state.selectedMessage.subject" t-esc="state.selectedMessage.subject"/>
+                                <t t-else="">(No Subject)</t>
+                            </h4>
+
+                            <!-- From/To/Cc/Bcc Info -->
+                            <div class="mail-detail-info">
+                                <div class="mail-detail-from">
+                                    From: <t t-esc="state.selectedMessage.display_name || state.selectedMessage.sender_name"/>
+                                    <t t-if="state.selectedMessage.sender_email">
+                                        &lt;<t t-esc="state.selectedMessage.sender_email"/>&gt;
+                                    </t>
+                                </div>
+                                <div class="mail-detail-to">
+                                    To: <t t-esc="state.selectedMessage.recipient_email || state.selectedMessage.display_email || 'me'"/>
+                                </div>
+                                <div class="mail-detail-cc">
+                                    Cc: <t t-esc="state.selectedMessage.cc_emails || ''"/>
+                                </div>
+                                <div class="mail-detail-bcc">
+                                    Bcc: <t t-esc="state.selectedMessage.bcc_emails || ''"/>
+                                </div>
+                            </div>
+
+                            <!-- Email Body -->
+                            <div class="mail-detail-body">
+                                <t t-out="getMessageBody()"/>
+                            </div>
+
+                            <t t-if="state.loadingAttachments">
+                                <div class="mail-detail-attachments loading text-muted">Loading attachments...</div>
+                            </t>
+                            <t t-elif="state.selectedAttachments and state.selectedAttachments.length > 0">
+                                <div class="mail-detail-attachments">
+                                    <div class="mail-detail-attachments-title">Attachments</div>
+                                    <div class="mail-detail-attachments-list">
+                                        <t t-foreach="state.selectedAttachments" t-as="attachment" t-key="attachment.id">
+                                            <a class="attachment-item attachment-link"
+                                               t-att-href="getAttachmentDownloadUrl(attachment)"
+                                               target="_blank" rel="noopener">
+                                                <i class="fa fa-paperclip"/>
+                                                <span class="attachment-name" t-esc="attachment.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <!-- Gmail-style Compose Dialog -->
+            <t t-if="state.showCompose">
+                <div t-att-class="'compose-dialog' + (state.composeExpanded ? ' expanded' : '') + (state.composeMinimized ? ' minimized' : '')">
+                    <div class="compose-header">
+                        <span class="compose-title">New Message</span>
+                        <div class="compose-header-actions">
+                            <button class="compose-header-btn" t-on-click="onMinimizeCompose" title="Minimize">
+                                <i class="fa fa-minus"/>
+                            </button>
+                            <button class="compose-header-btn" t-on-click="onExpandCompose" title="Full screen">
+                                <i t-att-class="'fa ' + (state.composeExpanded ? 'fa-compress' : 'fa-expand')"/>
+                            </button>
+                            <button class="compose-header-btn" t-on-click="onCloseCompose" title="Close">
+                                <i class="fa fa-times"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="compose-body">
+                        <div class="compose-field compose-to-field">
+                            <span class="compose-field-label">To</span>
+                            <input type="text" class="compose-input"
+                                   placeholder=""
+                                   data-field="to"
+                                   t-att-value="state.composeData.to"
+                                   t-on-input="onComposeInputChange"/>
+                            <div class="compose-cc-bcc-btns">
+                                <button t-att-class="'compose-toggle-btn' + (state.showCc ? ' active' : '')"
+                                        t-on-click="onToggleCc">Cc</button>
+                                <button t-att-class="'compose-toggle-btn' + (state.showBcc ? ' active' : '')"
+                                        t-on-click="onToggleBcc">Bcc</button>
+                            </div>
+                        </div>
+
+                        <t t-if="state.showCc">
+                            <div class="compose-field compose-to-field">
+                                <span class="compose-field-label">Cc</span>
+                                <input type="text" class="compose-input"
+                                       placeholder=""
+                                       data-field="cc"
+                                       t-att-value="state.composeData.cc"
+                                       t-on-input="onComposeInputChange"/>
+                            </div>
+                        </t>
+
+                        <t t-if="state.showBcc">
+                            <div class="compose-field compose-to-field">
+                                <span class="compose-field-label">Bcc</span>
+                                <input type="text" class="compose-input"
+                                       placeholder=""
+                                       data-field="bcc"
+                                       t-att-value="state.composeData.bcc"
+                                       t-on-input="onComposeInputChange"/>
+                            </div>
+                        </t>
+
+                        <div class="compose-field">
+                            <input type="text" class="compose-input"
+                                   placeholder="Subject"
+                                   data-field="subject"
+                                   t-att-value="state.composeData.subject"
+                                   t-on-input="onComposeInputChange"/>
+                        </div>
+
+                        <!-- Formatting Toolbar (shown when Aa is clicked) -->
+                        <t t-if="state.showFormatToolbar">
+                            <div class="compose-format-toolbar">
+                                <button class="format-btn" t-on-click="() => this.onFormatText('bold')" title="Bold">
+                                    <i class="fa fa-bold"/>
+                                </button>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('italic')" title="Italic">
+                                    <i class="fa fa-italic"/>
+                                </button>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('underline')" title="Underline">
+                                    <i class="fa fa-underline"/>
+                                </button>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('strikethrough')" title="Strikethrough">
+                                    <i class="fa fa-strikethrough"/>
+                                </button>
+                                <span class="format-separator"/>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('ul')" title="Bulleted list">
+                                    <i class="fa fa-list-ul"/>
+                                </button>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('ol')" title="Numbered list">
+                                    <i class="fa fa-list-ol"/>
+                                </button>
+                                <span class="format-separator"/>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('indent')" title="Indent">
+                                    <i class="fa fa-indent"/>
+                                </button>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('outdent')" title="Outdent">
+                                    <i class="fa fa-outdent"/>
+                                </button>
+                                <span class="format-separator"/>
+                                <button class="format-btn" t-on-click="() => this.onFormatText('quote')" title="Quote">
+                                    <i class="fa fa-quote-right"/>
+                                </button>
+                                <button class="format-btn" t-on-click="onRemoveFormatting" title="Remove formatting">
+                                    <i class="fa fa-eraser"/>
+                                </button>
+                            </div>
+                        </t>
+
+                        <div class="compose-field compose-body-field">
+                            <div class="compose-editor"
+                                 contenteditable="true"
+                                 data-field="body"
+                                 t-on-input="onEditorInput"
+                                 t-att-data-placeholder="'Write your message here...'"
+                                 t-ref="composeEditor"/>
+                        </div>
+
+                        <!-- Attachment Preview -->
+                        <t t-if="state.composeData.attachments and state.composeData.attachments.length > 0">
+                            <div class="compose-attachments">
+                                <t t-foreach="state.composeData.attachments" t-as="attachment" t-key="attachment.name">
+                                    <div class="attachment-item">
+                                        <i class="fa fa-file-o"/>
+                                        <span class="attachment-name" t-esc="attachment.name"/>
+                                        <span class="attachment-size" t-esc="formatFileSize(attachment.size)"/>
+                                        <button class="attachment-remove" t-on-click="() => this.onRemoveAttachment(attachment)">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Emoji Picker -->
+                    <t t-if="state.showEmojiPicker">
+                        <div class="emoji-picker">
+                            <div class="emoji-picker-header">
+                                <input type="text" class="emoji-search" placeholder="Search emoji..." t-on-input="onEmojiSearch"/>
+                            </div>
+                            <div class="emoji-picker-body">
+                                <t t-foreach="getFilteredEmojis()" t-as="emoji" t-key="emoji">
+                                    <button class="emoji-btn" t-on-click="() => this.onInsertEmoji(emoji)" t-esc="emoji"/>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Link Dialog -->
+                    <t t-if="state.showLinkDialog">
+                        <div class="link-dialog-overlay" t-on-click="onCloseLinkDialog">
+                            <div class="link-dialog" t-on-click.stop="">
+                                <div class="link-dialog-header">Insert Link</div>
+                                <div class="link-dialog-body">
+                                    <div class="link-field">
+                                        <label>Text to display</label>
+                                        <input type="text" t-att-value="state.linkData.text" t-on-input="(e) => this.state.linkData.text = e.target.value"/>
+                                    </div>
+                                    <div class="link-field">
+                                        <label>URL</label>
+                                        <input type="text" t-att-value="state.linkData.url" t-on-input="(e) => this.state.linkData.url = e.target.value" placeholder="https://"/>
+                                    </div>
+                                </div>
+                                <div class="link-dialog-footer">
+                                    <button class="link-btn-cancel" t-on-click="onCloseLinkDialog">Cancel</button>
+                                    <button class="link-btn-insert" t-on-click="onInsertLink">Insert</button>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Hidden File Inputs -->
+                    <input type="file" class="hidden-file-input" t-ref="fileInput" t-on-change="onFileSelected" multiple="multiple" style="display:none;"/>
+                    <input type="file" class="hidden-file-input" t-ref="imageInput" t-on-change="onImageSelected" accept="image/*" style="display:none;"/>
+
+                    <div class="compose-footer">
+                        <div class="compose-footer-left">
+                            <div class="compose-send-group">
+                                <button class="btn-compose-send" t-on-click="onSendCompose">
+                                    Send
+                                </button>
+                                <button class="btn-compose-send-dropdown" t-on-click="onToggleSendOptions">
+                                    <i class="fa fa-caret-down"/>
+                                </button>
+                            </div>
+
+                            <div class="compose-toolbar">
+                                <button t-att-class="'compose-tool-btn' + (state.showFormatToolbar ? ' active' : '')"
+                                        title="Formatting options" t-on-click="onToggleFormatToolbar">
+                                    <span class="tool-text">Aa</span>
+                                </button>
+                                <div class="compose-tool-dropdown">
+                                    <button t-att-class="'compose-tool-btn' + (state.showColorPicker ? ' active' : '')"
+                                            title="Text color" t-on-click="onTextColor">
+                                        <i class="fa fa-paint-brush"/>
+                                    </button>
+                                    <t t-if="state.showColorPicker">
+                                        <div class="color-picker-dropdown">
+                                            <div class="color-picker-grid">
+                                                <t t-foreach="textColors" t-as="colorItem" t-key="colorItem.color">
+                                                    <button class="color-swatch"
+                                                            t-att-style="'background-color: ' + colorItem.color"
+                                                            t-att-title="colorItem.name"
+                                                            t-on-click="() => this.onApplyTextColor(colorItem.color)"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                <button class="compose-tool-btn" title="Attach files" t-on-click="onAttachFile">
+                                    <i class="fa fa-paperclip"/>
+                                </button>
+                                <button class="compose-tool-btn" title="Insert link" t-on-click="onShowLinkDialog">
+                                    <i class="fa fa-link"/>
+                                </button>
+                                <button t-att-class="'compose-tool-btn' + (state.showEmojiPicker ? ' active' : '')"
+                                        title="Insert emoji" t-on-click="onToggleEmojiPicker">
+                                    <i class="fa fa-smile-o"/>
+                                </button>
+                                <button class="compose-tool-btn" title="Insert photo" t-on-click="onInsertPhoto">
+                                    <i class="fa fa-image"/>
+                                </button>
+                                <button class="compose-tool-btn" title="Insert signature" t-on-click="onInsertSignature">
+                                    <i class="fa fa-pencil"/>
+                                </button>
+                                <div class="compose-tool-dropdown">
+                                    <button t-att-class="'compose-tool-btn' + (state.showMoreOptionsMenu ? ' active' : '')"
+                                            title="More options" t-on-click="onMoreOptions">
+                                        <i class="fa fa-ellipsis-v"/>
+                                    </button>
+                                    <t t-if="state.showMoreOptionsMenu">
+                                        <div class="more-options-dropdown">
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="onLabelAsImportant">
+                                                <i class="fa fa-bookmark me-2"/>Label as important
+                                            </a>
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="onPlainTextMode">
+                                                <i class="fa fa-file-text-o me-2"/>Plain text mode
+                                            </a>
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="onCheckSpelling">
+                                                <i class="fa fa-check-circle me-2"/>Check spelling
+                                            </a>
+                                            <div class="dropdown-divider"/>
+                                            <a class="dropdown-item" href="#" t-on-click.prevent="onSaveDraft">
+                                                <i class="fa fa-save me-2"/>Save draft
+                                            </a>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="compose-footer-right">
+                            <button class="compose-tool-btn compose-delete-btn" t-on-click="onDiscardDraft" title="Discard draft">
+                                <i class="fa fa-trash-o"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Undo Send Bar -->
+            <t t-if="state.showUndoSend">
+                <div class="undo-send-bar">
+                    <span>Sending message in <strong t-esc="state.undoSendSeconds"/> seconds...</span>
+                    <button class="btn btn-link undo-send-btn" t-on-click="onUndoSend">Undo</button>
+                </div>
+            </t>
+
+            <!-- Schedule Send Dialog -->
+            <t t-if="state.showScheduleSend">
+                <div class="modal-backdrop show" t-on-click="onCloseScheduleSend"/>
+                <div class="schedule-send-modal">
+                    <div class="schedule-send-header">
+                        <h5>Schedule send</h5>
+                        <button class="btn-close" t-on-click="onCloseScheduleSend"/>
+                    </div>
+                    <div class="schedule-send-body">
+                        <div class="schedule-quick-options">
+                            <button class="btn btn-outline-secondary" t-on-click="onScheduleLaterToday">
+                                <i class="fa fa-sun-o me-2"/>Later today
+                            </button>
+                            <button class="btn btn-outline-secondary" t-on-click="onScheduleTomorrow">
+                                <i class="fa fa-calendar me-2"/>Tomorrow morning
+                            </button>
+                            <button class="btn btn-outline-secondary" t-on-click="onScheduleNextWeek">
+                                <i class="fa fa-calendar-plus-o me-2"/>Next week
+                            </button>
+                        </div>
+                        <div class="schedule-custom">
+                            <h6>Or pick date &amp; time:</h6>
+                            <div class="schedule-inputs">
+                                <input type="date" class="form-control" t-att-value="state.scheduledDate" t-on-change="onScheduleDateChange"/>
+                                <input type="time" class="form-control" t-att-value="state.scheduledTime" t-on-change="onScheduleTimeChange"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="schedule-send-footer">
+                        <button class="btn btn-secondary" t-on-click="onCloseScheduleSend">Cancel</button>
+                        <button class="btn btn-primary" t-on-click="onConfirmScheduleSend">Schedule send</button>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Keyboard Shortcuts Modal -->
+            <t t-if="state.showKeyboardShortcuts">
+                <div class="modal-backdrop show" t-on-click="onCloseKeyboardShortcuts"/>
+                <div class="keyboard-shortcuts-modal">
+                    <div class="shortcuts-header">
+                        <h5>Keyboard shortcuts</h5>
+                        <button class="btn-close" t-on-click="onCloseKeyboardShortcuts"/>
+                    </div>
+                    <div class="shortcuts-body">
+                        <div class="shortcuts-section">
+                            <h6>Navigation</h6>
+                            <div class="shortcut-row"><kbd>j</kbd><span>Next message</span></div>
+                            <div class="shortcut-row"><kbd>k</kbd><span>Previous message</span></div>
+                            <div class="shortcut-row"><kbd>o</kbd><span>Open message</span></div>
+                            <div class="shortcut-row"><kbd>u</kbd><span>Back to list</span></div>
+                            <div class="shortcut-row"><kbd>/</kbd><span>Search</span></div>
+                        </div>
+                        <div class="shortcuts-section">
+                            <h6>Go to</h6>
+                            <div class="shortcut-row"><kbd>g</kbd> then <kbd>i</kbd><span>Go to Inbox</span></div>
+                            <div class="shortcut-row"><kbd>g</kbd> then <kbd>s</kbd><span>Go to Starred</span></div>
+                            <div class="shortcut-row"><kbd>g</kbd> then <kbd>t</kbd><span>Go to Sent</span></div>
+                            <div class="shortcut-row"><kbd>g</kbd> then <kbd>d</kbd><span>Go to Drafts</span></div>
+                        </div>
+                        <div class="shortcuts-section">
+                            <h6>Actions</h6>
+                            <div class="shortcut-row"><kbd>c</kbd><span>Compose</span></div>
+                            <div class="shortcut-row"><kbd>r</kbd><span>Reply</span></div>
+                            <div class="shortcut-row"><kbd>a</kbd><span>Reply all</span></div>
+                            <div class="shortcut-row"><kbd>f</kbd><span>Forward</span></div>
+                            <div class="shortcut-row"><kbd>s</kbd><span>Star/Unstar</span></div>
+                            <div class="shortcut-row"><kbd>e</kbd><span>Archive</span></div>
+                            <div class="shortcut-row"><kbd>#</kbd><span>Delete</span></div>
+                            <div class="shortcut-row"><kbd>!</kbd><span>Report spam</span></div>
+                            <div class="shortcut-row"><kbd>?</kbd><span>Show shortcuts</span></div>
+                            <div class="shortcut-row"><kbd>Esc</kbd><span>Close dialogs</span></div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            <!-- Right-click Context Menu -->
+            <t t-if="state.showContextMenu">
+                <div class="context-menu-backdrop" t-on-click="onCloseContextMenu"/>
+                <div class="context-menu" t-attf-style="left: {{state.contextMenuX}}px; top: {{state.contextMenuY}}px;">
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('open')">
+                        <i class="fa fa-envelope-open me-2"/>Open
+                    </a>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('reply')">
+                        <i class="fa fa-reply me-2"/>Reply
+                    </a>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('replyAll')">
+                        <i class="fa fa-reply-all me-2"/>Reply all
+                    </a>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('forward')">
+                        <i class="fa fa-share me-2"/>Forward
+                    </a>
+                    <div class="context-menu-divider"/>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('star')">
+                        <i class="fa fa-star me-2"/>Star/Unstar
+                    </a>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('markRead')">
+                        <i class="fa fa-envelope-o me-2"/>Mark as read/unread
+                    </a>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('archive')">
+                        <i class="fa fa-archive me-2"/>Archive
+                    </a>
+                    <div class="context-menu-divider"/>
+                    <a class="context-menu-item" href="#" t-on-click.prevent="() => this.onContextMenuAction('spam')">
+                        <i class="fa fa-exclamation-circle me-2"/>Report spam
+                    </a>
+                    <a class="context-menu-item text-danger" href="#" t-on-click.prevent="() => this.onContextMenuAction('delete')">
+                        <i class="fa fa-trash me-2"/>Delete
+                    </a>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

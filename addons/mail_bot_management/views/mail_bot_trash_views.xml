@@ -1,0 +1,63 @@
+<odoo>
+    
+    <!-- Trash Tree View -->
+    <record id="view_mail_bot_trash_tree" model="ir.ui.view">
+        <field name="name">mail.bot.trash.tree</field>
+        <field name="model">mail.bot.trash</field>
+        <field name="arch" type="xml">
+            <tree string="Trash">
+                <field name="sender_name"/>
+                <field name="sender_email"/>
+                <field name="subject"/>
+                <field name="deleted_date"/>
+                <field name="original_folder" widget="badge" decoration-info="original_folder == 'inbox'" decoration-success="original_folder == 'sent'" decoration-warning="original_folder == 'draft'"/>
+                <button name="action_restore" string="Restore" type="object" icon="fa-undo" class="btn-link"/>
+                <button name="action_delete_permanently" string="Delete" type="object" icon="fa-trash" class="btn-link text-danger" confirm="Are you sure you want to permanently delete this message?"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Trash Form View -->
+    <record id="view_mail_bot_trash_form" model="ir.ui.view">
+        <field name="name">mail.bot.trash.form</field>
+        <field name="model">mail.bot.trash</field>
+        <field name="arch" type="xml">
+            <form string="Trash Message">
+                <header>
+                    <button name="action_restore" string="Restore" type="object" class="oe_highlight"/>
+                    <button name="action_delete_permanently" string="Delete Permanently" type="object" class="btn-danger"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sender_email"/>
+                            <field name="recipient_email"/>
+                        </group>
+                        <group>
+                            <field name="subject"/>
+                            <field name="deleted_date"/>
+                            <field name="original_folder"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content">
+                            <field name="body" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Trash Action -->
+    <record id="action_mail_bot_trash" model="ir.actions.act_window">
+        <field name="name">Trash</field>
+        <field name="res_model">mail.bot.trash</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Trash is empty
+            </p>
+        </field>
+    </record>
+</odoo>

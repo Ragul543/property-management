@@ -1,0 +1,15 @@
+// Colors
+
+$mk_color_appsmenu_text: #1880e9;
+$mk_color_appbar_text: #d1490a;
+$mk_color_appbar_active: #ef7f29;
+$mk_color_appbar_background: #111827;
+$mk_color_appbar_background: #0f172a;
+
+
+// Override
+
+$mk-appsmenu-color: $mk_color_appsmenu_text;
+$mk-appbar-color: $mk_color_appbar_text;
+$mk-appbar-active: $mk_color_appbar_active;
+$mk-appbar-background: $mk_color_appbar_background;

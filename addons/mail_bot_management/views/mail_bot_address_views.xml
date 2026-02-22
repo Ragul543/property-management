@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Bot Address Tree View -->
+        <record id="mail_bot_address_view_tree" model="ir.ui.view">
+            <field name="name">mail.bot.address.view.tree</field>
+            <field name="model">mail.bot.address</field>
+            <field name="arch" type="xml">
+                <tree string="Bot Addresses">
+                    <field name="name"/>
+                    <field name="email"/>
+                    <field name="server_id"/>
+                    <field name="auto_reply"/>
+                    <field name="log_actions"/>
+                    <field name="action_count" string="Actions"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Bot Address Form View -->
+        <record id="mail_bot_address_view_form" model="ir.ui.view">
+            <field name="name">mail.bot.address.view.form</field>
+            <field name="model">mail.bot.address</field>
+            <field name="arch" type="xml">
+                <form string="Bot Address">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_action_logs" type="object"
+                                    class="oe_stat_button" icon="fa-history">
+                                <field name="action_count" widget="statinfo" string="Actions"/>
+                            </button>
+                        </div>
+                        <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Bot Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="email" placeholder="bot@example.com"/>
+                                <field name="server_id"/>
+                                <field name="outgoing_server_id"/>
+                            </group>
+                            <group>
+                                <field name="auto_reply"/>
+                                <field name="log_actions"/>
+                                <field name="active"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Allowed Commands" name="commands">
+                                <field name="command_ids" widget="many2many_tags">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="code"/>
+                                        <field name="target_model"/>
+                                    </tree>
+                                </field>
+                                <p class="text-muted">Leave empty to allow all commands.</p>
+                            </page>
+                            <page string="Access Control" name="access">
+                                <group>
+                                    <field name="allowed_sender_domains" placeholder="company.com, partner.com"/>
+                                    <field name="allowed_user_ids" widget="many2many_tags"/>
+                                </group>
+                                <p class="text-muted">
+                                    Leave both empty to allow all senders.
+                                    If domains are specified, only emails from those domains will be processed.
+                                    If users are specified, only those users can send commands.
+                                </p>
+                            </page>
+                            <page string="Other Info" name="other">
+                                <group>
+                                    <group>
+                                        <field name="user_id"/>
+                                        <field name="company_id" groups="base.group_multi_company"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Bot Address Search View -->
+        <record id="mail_bot_address_view_search" model="ir.ui.view">
+            <field name="name">mail.bot.address.view.search</field>
+            <field name="model">mail.bot.address</field>
+            <field name="arch" type="xml">
+                <search string="Search Bot Addresses">
+                    <field name="name"/>
+                    <field name="email"/>
+                    <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                    <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter name="group_server" string="Server" context="{'group_by': 'server_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Bot Address Action -->
+        <record id="mail_bot_address_action" model="ir.actions.act_window">
+            <field name="name">Bot Addresses</field>
+            <field name="res_model">mail.bot.address</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first bot email address
+                </p>
+                <p>
+                    Bot addresses are email addresses that automatically process incoming emails
+                    as commands. Users can send emails to these addresses to create leads,
+                    contacts, tasks, and more.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

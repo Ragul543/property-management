@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Cron Job to Empty Trash After 30 Days -->
+        <record id="ir_cron_empty_trash" model="ir.cron">
+            <field name="name">Mail Bot: Empty Trash (30 days)</field>
+            <field name="model_id" ref="model_mail_bot_trash"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_empty_trash()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Cron Job to Fetch Emails -->
+        <record id="ir_cron_fetch_emails" model="ir.cron">
+            <field name="name">Mail Bot: Fetch Emails</field>
+            <field name="model_id" ref="model_mail_bot_server"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_fetch_emails()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Sample Email Template -->
+        <record id="email_template_welcome" model="mail.template">
+            <field name="name">Welcome Email</field>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="subject">Welcome to Mail Bot Management!</field>
+            <field name="body_html" type="html">
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2>Welcome!</h2>
+                    <p>Dear ${object.name},</p>
+                    <p>Welcome to the Mail Bot Management System.</p>
+                    <p>You can now manage your emails efficiently with our custom inbox, sent, draft, and spam folders.</p>
+                    <br/>
+                    <p>Best regards,</p>
+                    <p>The Mail Bot Team</p>
+                </div>
+            </field>
+            <field name="email_from">${object.company_id.email}</field>
+            <field name="email_to">${object.email}</field>
+        </record>
+
+        <!-- Default Bot Commands -->
+        <record id="mail_bot_command_create_lead" model="mail.bot.command">
+            <field name="name">Create Lead</field>
+            <field name="code">create_lead</field>
+            <field name="keywords">create lead, new lead, add lead, create opportunity, new opportunity</field>
+            <field name="target_model">mail.bot.lead</field>
+            <field name="sequence">10</field>
+            <field name="description">Creates a new lead or opportunity from email content. Include details like Name, Contact, Phone, Company, and Description.</field>
+            <field name="success_template"><![CDATA[<p>Your lead has been created successfully and is ready for follow-up.</p>]]></field>
+            <field name="error_template"><![CDATA[<p>Failed to create lead. Please check the email format and try again.</p>]]></field>
+        </record>
+
+        <record id="mail_bot_command_create_contact" model="mail.bot.command">
+            <field name="name">Create Contact</field>
+            <field name="code">create_contact</field>
+            <field name="keywords">create contact, new contact, add contact, create partner, new partner</field>
+            <field name="target_model">res.partner</field>
+            <field name="sequence">20</field>
+            <field name="description">Creates a new contact from email content. Include details like Name, Email, Phone, Mobile, Company, and Address.</field>
+            <field name="success_template"><![CDATA[<p>Your contact has been created successfully.</p>]]></field>
+            <field name="error_template"><![CDATA[<p>Failed to create contact. Please check the email format and try again.</p>]]></field>
+        </record>
+
+        <record id="mail_bot_command_create_task" model="mail.bot.command">
+            <field name="name">Create Task</field>
+            <field name="code">create_task</field>
+            <field name="keywords">create task, new task, add task, todo, to-do, to do</field>
+            <field name="target_model">mail.bot.task</field>
+            <field name="sequence">30</field>
+            <field name="description">Creates a new task from email content. Include details like Task name, Description, Deadline, and Priority (urgent, high, normal, low).</field>
+            <field name="success_template"><![CDATA[<p>Your task has been created successfully.</p>]]></field>
+            <field name="error_template"><![CDATA[<p>Failed to create task. Please check the email format and try again.</p>]]></field>
+        </record>
+
+    </data>
+</odoo>

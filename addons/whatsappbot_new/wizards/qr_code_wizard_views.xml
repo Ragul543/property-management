@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="whatsapp_qr_wizard_form" model="ir.ui.view">
+        <field name="name">whatsapp.qr.wizard.form</field>
+        <field name="model">whatsapp.qr.wizard</field>
+        <field name="arch" type="xml">
+            <form string="WhatsApp QR Code">
+                <field name="config_id" invisible="1"/>
+                <field name="state" invisible="1"/>
+
+                <!-- Connected State -->
+                <div class="text-center p-4" invisible="state != 'connected'">
+                    <div class="mb-3">
+                        <i class="fa fa-check-circle text-success" style="font-size: 64px;"/>
+                    </div>
+                    <h3 class="text-success">WhatsApp Connected!</h3>
+                    <p class="text-muted">Your WhatsApp is successfully linked. You can now send and receive messages.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="text-center p-4" invisible="state != 'loading'">
+                    <div class="mb-3">
+                        <i class="fa fa-qrcode" style="font-size: 64px; color: #875A7B;"/>
+                    </div>
+                    <h4>WhatsApp QR Code</h4>
+                    <p class="text-muted"><field name="message" readonly="1" nolabel="1" widget="text"/></p>
+                    <button name="action_refresh_qr" type="object" string="Load QR Code" class="btn btn-primary btn-lg mt-3" icon="fa-qrcode"/>
+                </div>
+
+                <!-- QR Code State -->
+                <div class="text-center p-3" invisible="state != 'qr'">
+                    <h4 class="mb-3">Scan QR Code with WhatsApp</h4>
+                    <div class="d-flex justify-content-center mb-3">
+                        <field name="qr_image" widget="image" class="img-fluid"
+                               style="max-width: 300px; max-height: 300px; border: 2px solid #ddd; border-radius: 8px;"/>
+                    </div>
+                    <div class="alert alert-info text-start" role="alert">
+                        <strong>How to scan:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>Open WhatsApp on your phone</li>
+                            <li>Go to <strong>Settings</strong> > <strong>Linked Devices</strong></li>
+                            <li>Tap <strong>Link a Device</strong></li>
+                            <li>Point your phone camera at this QR code</li>
+                        </ol>
+                    </div>
+                    <p class="text-muted small"><field name="message" readonly="1" nolabel="1" widget="text"/></p>
+                </div>
+
+                <!-- Error State -->
+                <div class="text-center p-4" invisible="state != 'error'">
+                    <div class="mb-3">
+                        <i class="fa fa-exclamation-triangle text-danger" style="font-size: 48px;"/>
+                    </div>
+                    <h4 class="text-danger">Connection Error</h4>
+                    <p class="text-muted"><field name="message" readonly="1" nolabel="1" widget="text"/></p>
+                    <button name="action_refresh_qr" type="object" string="Retry" class="btn btn-warning mt-2" icon="fa-refresh"/>
+                </div>
+
+                <footer invisible="state == 'connected'">
+                    <button name="action_refresh_qr" type="object" string="Refresh QR" class="btn btn-secondary" icon="fa-refresh"/>
+                    <button name="action_check_status" type="object" string="I've Scanned It" class="btn btn-primary" icon="fa-check" invisible="state != 'qr'"/>
+                    <button string="Close" class="btn btn-secondary" special="cancel"/>
+                </footer>
+                <footer invisible="state != 'connected'">
+                    <button string="Close" class="btn btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_whatsapp_qr_wizard" model="ir.actions.act_window">
+        <field name="name">WhatsApp QR Code</field>
+        <field name="res_model">whatsapp.qr.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

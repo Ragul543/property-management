@@ -1,0 +1,64 @@
+<odoo>
+<!-- =================================
+         views/mail_bot_draft_views.xml
+         ================================= -->
+    
+    <!-- Draft Tree View -->
+    <record id="view_mail_bot_draft_tree" model="ir.ui.view">
+        <field name="name">mail.bot.draft.tree</field>
+        <field name="model">mail.bot.draft</field>
+        <field name="arch" type="xml">
+            <tree string="Drafts">
+                <field name="recipient_email"/>
+                <field name="subject"/>
+                <field name="write_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Draft Form View -->
+    <record id="view_mail_bot_draft_form" model="ir.ui.view">
+        <field name="name">mail.bot.draft.form</field>
+        <field name="model">mail.bot.draft</field>
+        <field name="arch" type="xml">
+            <form string="Draft Message">
+                <header>
+                    <button name="action_send" string="Send" type="object" class="oe_highlight"/>
+                    <button name="action_discard" string="Discard" type="object"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="recipient_email" widget="email" placeholder="recipient@example.com"/>
+                            <field name="cc_emails" placeholder="cc@example.com"/>
+                            <field name="bcc_emails" placeholder="bcc@example.com"/>
+                        </group>
+                        <group>
+                            <field name="subject" placeholder="Subject"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content">
+                            <field name="body" widget="html" placeholder="Compose your message..."/>
+                        </page>
+                        <page string="Attachments">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Draft Action -->
+    <record id="action_mail_bot_draft" model="ir.actions.act_window">
+        <field name="name">Drafts</field>
+        <field name="res_model">mail.bot.draft</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No draft messages
+            </p>
+        </field>
+    </record>
+</odoo>

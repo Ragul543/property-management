@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Legal Documents action (must be defined before the form view references it) -->
+    <record id="action_property_legal_documents" model="ir.actions.act_window">
+        <field name="name">Legal Documents</field>
+        <field name="res_model">property.legal.document</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('property_id', '=', active_id)]</field>
+        <field name="context">{'default_property_id': active_id}</field>
+    </record>
+
+    <!-- Legal Documents tree view -->
+    <record id="property_legal_document_view_tree" model="ir.ui.view">
+        <field name="name">property.legal.document.view.tree</field>
+        <field name="model">property.legal.document</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="property_id"/>
+                <field name="name"/>
+                <field name="document_type"/>
+                <field name="date"/>
+                <field name="verified" widget="badge"
+                       decoration-info="verified == 'not_verified'"
+                       decoration-success="verified == 'verified'"
+                       decoration-danger="verified == 'discrepancy'"/>
+                <field name="notes"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Legal Documents form view -->
+    <record id="property_legal_document_view_form" model="ir.ui.view">
+        <field name="name">property.legal.document.view.form</field>
+        <field name="model">property.legal.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="document_type"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="property_id"/>
+                            <field name="verified"/>
+                            <field name="document" filename="document_filename"/>
+                            <field name="document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Inherit property form to add Legal Information tab -->
+    <record id="property_property_view_form_legal" model="ir.ui.view">
+        <field name="name">property.property.view.form.legal</field>
+        <field name="model">property.property</field>
+        <field name="inherit_id" ref="advanced_property_management.property_property_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add Legal Verification smart button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(advanced_property_management.action_property_legal_documents)d"
+                        type="action" class="oe_stat_button" icon="fa-gavel">
+                    <field name="legal_progress" widget="percentpie"
+                           string="Legal"/>
+                </button>
+            </xpath>
+
+            <!-- Add Legal Information tab in notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Legal Information" name="legal_info">
+
+                    <!-- Overall Legal Status Header -->
+                    <group>
+                        <group>
+                            <field name="legal_verification_status"
+                                   widget="badge"
+                                   decoration-info="legal_verification_status == 'not_started'"
+                                   decoration-warning="legal_verification_status == 'in_progress'"
+                                   decoration-success="legal_verification_status == 'verified'"
+                                   decoration-danger="legal_verification_status == 'issues_found'"/>
+                            <field name="legal_progress" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="legal_verified_by"/>
+                            <field name="legal_verified_date"/>
+                        </group>
+                    </group>
+
+                    <separator string="Survey / Property Identity"/>
+                    <group>
+                        <group>
+                            <field name="legal_district"/>
+                            <field name="legal_taluk"/>
+                            <field name="legal_village"/>
+                        </group>
+                        <group>
+                            <field name="legal_survey_no"/>
+                            <field name="legal_subdivision_no"/>
+                        </group>
+                    </group>
+
+                    <!-- PATTA & CHITTA -->
+                    <separator string="Patta &amp; Chitta (Ownership &amp; Land Type)"/>
+                    <group>
+                        <group>
+                            <field name="patta_no"/>
+                            <field name="chitta_no"/>
+                            <field name="patta_owner_name"/>
+                            <field name="patta_land_area"/>
+                        </group>
+                        <group>
+                            <field name="patta_land_type"/>
+                            <field name="patta_tax_status"/>
+                            <field name="patta_verified" widget="badge"
+                                   decoration-info="patta_verified == 'not_verified'"
+                                   decoration-success="patta_verified == 'verified'"
+                                   decoration-danger="patta_verified == 'discrepancy'"/>
+                            <field name="patta_document" filename="patta_document_filename"/>
+                            <field name="patta_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="patta_notes" placeholder="Notes about Patta/Chitta verification..."/>
+                    </group>
+
+                    <!-- ENCUMBRANCE CERTIFICATE -->
+                    <separator string="Encumbrance Certificate (EC)"/>
+                    <group>
+                        <group>
+                            <field name="ec_number"/>
+                            <field name="ec_from_date"/>
+                            <field name="ec_to_date"/>
+                        </group>
+                        <group>
+                            <field name="ec_status" widget="badge"
+                                   decoration-success="ec_status == 'clear'"
+                                   decoration-danger="ec_status == 'encumbered'"
+                                   decoration-warning="ec_status == 'pending'"/>
+                            <field name="ec_verified" widget="badge"
+                                   decoration-info="ec_verified == 'not_verified'"
+                                   decoration-success="ec_verified == 'verified'"
+                                   decoration-danger="ec_verified == 'discrepancy'"/>
+                            <field name="ec_document" filename="ec_document_filename"/>
+                            <field name="ec_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="ec_remarks" placeholder="EC verification remarks..."/>
+                    </group>
+
+                    <!-- FMB / TSLR -->
+                    <separator string="FMB / TSLR (Survey Boundary Sketch)"/>
+                    <group>
+                        <group>
+                            <field name="fmb_tslr_type"/>
+                            <field name="fmb_boundary_north"/>
+                            <field name="fmb_boundary_south"/>
+                        </group>
+                        <group>
+                            <field name="fmb_boundary_east"/>
+                            <field name="fmb_boundary_west"/>
+                            <field name="fmb_verified" widget="badge"
+                                   decoration-info="fmb_verified == 'not_verified'"
+                                   decoration-success="fmb_verified == 'verified'"
+                                   decoration-danger="fmb_verified == 'discrepancy'"/>
+                            <field name="fmb_document" filename="fmb_document_filename"/>
+                            <field name="fmb_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="fmb_notes" placeholder="FMB/TSLR verification notes..."/>
+                    </group>
+
+                    <!-- LAYOUT APPROVAL -->
+                    <separator string="Layout Approval (CMDA / DTCP)"/>
+                    <group>
+                        <group>
+                            <field name="layout_approval_no"/>
+                            <field name="layout_approval_date"/>
+                            <field name="layout_approved_by"/>
+                        </group>
+                        <group>
+                            <field name="layout_approval_status" widget="badge"
+                                   decoration-success="layout_approval_status == 'approved'"
+                                   decoration-danger="layout_approval_status == 'not_approved'"
+                                   decoration-warning="layout_approval_status == 'pending'"
+                                   decoration-info="layout_approval_status == 'not_applicable'"/>
+                            <field name="layout_verified" widget="badge"
+                                   decoration-info="layout_verified == 'not_verified'"
+                                   decoration-success="layout_verified == 'verified'"
+                                   decoration-danger="layout_verified == 'discrepancy'"/>
+                            <field name="layout_document" filename="layout_document_filename"/>
+                            <field name="layout_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="layout_conditions" placeholder="Approval conditions or restrictions..."/>
+                    </group>
+
+                    <!-- LAND USE / ZONING -->
+                    <separator string="Land Use / Zoning"/>
+                    <group>
+                        <group>
+                            <field name="zoning_type"/>
+                            <field name="zoning_authority"/>
+                        </group>
+                        <group>
+                            <field name="zoning_verified" widget="badge"
+                                   decoration-info="zoning_verified == 'not_verified'"
+                                   decoration-success="zoning_verified == 'verified'"
+                                   decoration-danger="zoning_verified == 'discrepancy'"/>
+                            <field name="zoning_document" filename="zoning_document_filename"/>
+                            <field name="zoning_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="zoning_permitted_use" placeholder="Permitted use for this land..."/>
+                        </group>
+                        <group>
+                            <field name="zoning_restrictions" placeholder="Any zoning restrictions..."/>
+                        </group>
+                    </group>
+
+                    <!-- SELLER VERIFICATION / TITLE CHAIN -->
+                    <separator string="Seller Verification &amp; Title Chain"/>
+                    <group>
+                        <group>
+                            <field name="seller_name"/>
+                            <field name="seller_id_type"/>
+                            <field name="seller_id_no"/>
+                            <field name="seller_id_document" filename="seller_id_document_filename"/>
+                            <field name="seller_id_document_filename" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="sale_deed_no"/>
+                            <field name="sale_deed_date"/>
+                            <field name="sale_deed_sro"/>
+                            <field name="seller_document" filename="seller_document_filename"/>
+                            <field name="seller_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="title_chain_clear" widget="badge"
+                                   decoration-success="title_chain_clear == 'yes'"
+                                   decoration-danger="title_chain_clear == 'no'"
+                                   decoration-warning="title_chain_clear == 'pending'"/>
+                        </group>
+                        <group>
+                            <field name="title_verified" widget="badge"
+                                   decoration-info="title_verified == 'not_verified'"
+                                   decoration-success="title_verified == 'verified'"
+                                   decoration-danger="title_verified == 'discrepancy'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="title_chain_remarks" placeholder="Title chain verification remarks..."/>
+                    </group>
+
+                    <!-- TAX & DUES -->
+                    <separator string="Tax &amp; Dues"/>
+                    <group>
+                        <group>
+                            <field name="property_tax_no"/>
+                            <field name="tax_paid_upto"/>
+                            <field name="tax_due_amount"/>
+                        </group>
+                        <group>
+                            <field name="tax_authority"/>
+                            <field name="tax_status" widget="badge"
+                                   decoration-success="tax_status == 'paid'"
+                                   decoration-danger="tax_status == 'due'"
+                                   decoration-warning="tax_status == 'pending'"/>
+                            <field name="tax_verified" widget="badge"
+                                   decoration-info="tax_verified == 'not_verified'"
+                                   decoration-success="tax_verified == 'verified'"
+                                   decoration-danger="tax_verified == 'discrepancy'"/>
+                            <field name="tax_document" filename="tax_document_filename"/>
+                            <field name="tax_document_filename" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- ADDITIONAL LEGAL DOCUMENTS -->
+                    <separator string="Additional Legal Documents"/>
+                    <field name="legal_document_ids">
+                        <tree editable="bottom">
+                            <field name="name"/>
+                            <field name="document_type"/>
+                            <field name="document" filename="document_filename"/>
+                            <field name="document_filename" invisible="1"/>
+                            <field name="date"/>
+                            <field name="verified" widget="badge"
+                                   decoration-info="verified == 'not_verified'"
+                                   decoration-success="verified == 'verified'"
+                                   decoration-danger="verified == 'discrepancy'"/>
+                            <field name="notes"/>
+                        </tree>
+                    </field>
+
+                    <!-- OVERALL REMARKS -->
+                    <separator string="Overall Legal Remarks"/>
+                    <group>
+                        <field name="legal_overall_remarks" nolabel="1"
+                               placeholder="Summary of legal verification findings, recommendations, and any pending items..."/>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

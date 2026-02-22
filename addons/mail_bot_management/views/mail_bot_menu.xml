@@ -1,0 +1,182 @@
+<odoo>
+    <!-- Client Action for Mail Bot Dashboard -->
+    <record id="action_mail_bot_client_action" model="ir.actions.client">
+        <field name="name">Mail Bot</field>
+        <field name="tag">mail_bot_client_action</field>
+    </record>
+
+    <!-- Main Menu -->
+    <menuitem id="menu_mail_bot_root"
+              name="Mail Bot"
+              sequence="10"
+              action="action_mail_bot_client_action"
+              web_icon="mail_bot_management,static/description/icon.png"/>
+
+    <!-- ======================== -->
+    <!-- Messages Submenu -->
+    <!-- ======================== -->
+    <menuitem id="menu_mail_bot_messages"
+              name="Messages"
+              parent="menu_mail_bot_root"
+              sequence="10"/>
+
+    <menuitem id="menu_messages_inbox"
+              name="Inbox"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_inbox"
+              sequence="1"/>
+
+    <menuitem id="menu_messages_starred"
+              name="Starred"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_starred"
+              sequence="2"/>
+
+    <menuitem id="menu_messages_snoozed"
+              name="Snoozed"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_snoozed"
+              sequence="3"/>
+
+    <menuitem id="menu_messages_done"
+              name="Done"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_done"
+              sequence="4"/>
+
+    <menuitem id="menu_messages_sent"
+              name="Sent"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_sent"
+              sequence="5"/>
+
+    <menuitem id="menu_messages_drafts"
+              name="Drafts"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_draft"
+              sequence="6"/>
+
+    <menuitem id="menu_messages_trash"
+              name="Trash"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_trash"
+              sequence="7"/>
+
+    <menuitem id="menu_messages_all"
+              name="All Messages"
+              parent="menu_mail_bot_messages"
+              action="action_mail_bot_all_messages"
+              sequence="8"/>
+
+    <!-- ======================== -->
+    <!-- Configuration Submenu -->
+    <!-- ======================== -->
+    <menuitem id="menu_mail_bot_config"
+              name="Configuration"
+              parent="menu_mail_bot_root"
+              sequence="100"/>
+
+    <!-- Configuration Menu Items (as shown in image) -->
+    <menuitem id="menu_mail_bot_server"
+              name="Incoming Mail Servers"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_server"
+              sequence="1"/>
+
+    <menuitem id="menu_mail_bot_outgoing_server"
+              name="Outgoing Mail Servers"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_outgoing_server"
+              sequence="2"/>
+
+    <menuitem id="menu_mail_bot_folder"
+              name="Folders"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_folder"
+              sequence="3"/>
+
+    <menuitem id="menu_mail_bot_tag"
+              name="Tags"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_tag"
+              sequence="4"/>
+
+    <menuitem id="menu_mail_bot_label"
+              name="Labels"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_label"
+              sequence="5"/>
+
+    <menuitem id="menu_mail_bot_theme"
+              name="Themes"
+              parent="menu_mail_bot_config"
+              action="action_mail_bot_theme"
+              sequence="6"/>
+
+    <!-- ======================== -->
+    <!-- Bot Configuration Submenu -->
+    <!-- ======================== -->
+    <menuitem id="menu_mail_bot_automation"
+              name="Bot Automation"
+              parent="menu_mail_bot_root"
+              sequence="50"/>
+
+    <menuitem id="menu_mail_bot_addresses"
+              name="Bot Addresses"
+              parent="menu_mail_bot_automation"
+              action="mail_bot_address_action"
+              sequence="1"/>
+
+    <menuitem id="menu_mail_bot_commands"
+              name="Bot Commands"
+              parent="menu_mail_bot_automation"
+              action="mail_bot_command_action"
+              sequence="2"/>
+
+    <menuitem id="menu_mail_bot_action_logs"
+              name="Action Logs"
+              parent="menu_mail_bot_automation"
+              action="mail_bot_action_log_action"
+              sequence="3"/>
+
+    <!-- ======================== -->
+    <!-- Leads Submenu -->
+    <!-- ======================== -->
+    <menuitem id="menu_mail_bot_leads"
+              name="Leads"
+              parent="menu_mail_bot_root"
+              sequence="20"/>
+
+    <menuitem id="menu_mail_bot_leads_all"
+              name="All Leads"
+              parent="menu_mail_bot_leads"
+              action="mail_bot_lead_action"
+              sequence="1"/>
+
+    <menuitem id="menu_mail_bot_lead_tags"
+              name="Lead Tags"
+              parent="menu_mail_bot_leads"
+              action="mail_bot_lead_tag_action"
+              sequence="10"/>
+
+    <!-- ======================== -->
+    <!-- Tasks Submenu -->
+    <!-- ======================== -->
+    <menuitem id="menu_mail_bot_tasks"
+              name="Tasks"
+              parent="menu_mail_bot_root"
+              sequence="30"/>
+
+    <menuitem id="menu_mail_bot_tasks_all"
+              name="All Tasks"
+              parent="menu_mail_bot_tasks"
+              action="mail_bot_task_action"
+              sequence="1"/>
+
+    <menuitem id="menu_mail_bot_task_tags"
+              name="Task Tags"
+              parent="menu_mail_bot_tasks"
+              action="mail_bot_task_tag_action"
+              sequence="10"/>
+
+</odoo>

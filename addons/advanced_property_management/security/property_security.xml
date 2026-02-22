@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- Property company rule -->
+        <record id="property_property_company_rule" model="ir.rule">
+            <field name="name">property multi company rule</field>
+            <field name="model_id" ref="model_property_property"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                ('company_id', '=', company_id)]
+            </field>
+        </record>
+        <!-- Property sale company rule -->
+        <record id="property_sale_company_rule" model="ir.rule">
+            <field name="name">property sale multi company rule</field>
+            <field name="model_id" ref="model_property_sale"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                ('company_id', '=', company_id)]
+            </field>
+        </record>
+        <!-- Property rental company rule -->
+        <record id="property_rental_company_rule" model="ir.rule">
+            <field name="name">property rental multi company rule</field>
+            <field name="model_id" ref="model_property_rental"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                ('company_id', '=', company_id)]
+            </field>
+        </record>
+        <!-- Property auction company rule -->
+        <record id="property_auction_company_rule" model="ir.rule">
+            <field name="name">multi company rule</field>
+            <field name="model_id" ref="model_property_auction"/>
+            <field name="domain_force">['|', ('company_id', '=', False),
+                ('company_id', '=', company_id)]
+            </field>
+        </record>
+    </data>
+
+    <!-- Clean up old broken rules stuck with noupdate=True in database -->
+    <data noupdate="0">
+        <delete model="ir.rule" search="[('name', 'like', 'agent sees own records')]"/>
+        <delete model="ir.rule" search="[('name', 'like', 'manager sees all')]"/>
+        <delete model="ir.rule" search="[('name', 'like', 'property agent sees own')]"/>
+        <delete model="ir.rule" search="[('name', 'like', 'property manager sees all')]"/>
+    </data>
+
+    <!-- Recreate rules with fresh IDs - noupdate=0 ensures they always load -->
+    <data noupdate="0">
+        <!-- ============================================ -->
+        <!-- Property Agent: see only own records         -->
+        <!-- Property Manager / Admin: sees all records   -->
+        <!-- ============================================ -->
+
+        <!-- Property: agent sees only their assigned properties -->
+        <record id="rule_property_agent_own" model="ir.rule">
+            <field name="name">Property: agent own records only</field>
+            <field name="model_id" ref="model_property_property"/>
+            <field name="groups" eval="[(4, ref('group_property_agent'))]"/>
+            <field name="domain_force">[('responsible_id', '=', user.id)]</field>
+        </record>
+        <!-- Property: manager sees all -->
+        <record id="rule_property_manager_all" model="ir.rule">
+            <field name="name">Property: manager all records</field>
+            <field name="model_id" ref="model_property_property"/>
+            <field name="groups" eval="[(4, ref('group_property_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Property Sale: agent sees only their sales -->
+        <record id="rule_sale_agent_own" model="ir.rule">
+            <field name="name">Property Sale: agent own records only</field>
+            <field name="model_id" ref="model_property_sale"/>
+            <field name="groups" eval="[(4, ref('group_property_agent'))]"/>
+            <field name="domain_force">[('salesperson_id', '=', user.id)]</field>
+        </record>
+        <!-- Property Sale: manager sees all -->
+        <record id="rule_sale_manager_all" model="ir.rule">
+            <field name="name">Property Sale: manager all records</field>
+            <field name="model_id" ref="model_property_sale"/>
+            <field name="groups" eval="[(4, ref('group_property_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Property Rental: agent sees only their rentals -->
+        <record id="rule_rental_agent_own" model="ir.rule">
+            <field name="name">Property Rental: agent own records only</field>
+            <field name="model_id" ref="model_property_rental"/>
+            <field name="groups" eval="[(4, ref('group_property_agent'))]"/>
+            <field name="domain_force">[('salesperson_id', '=', user.id)]</field>
+        </record>
+        <!-- Property Rental: manager sees all -->
+        <record id="rule_rental_manager_all" model="ir.rule">
+            <field name="name">Property Rental: manager all records</field>
+            <field name="model_id" ref="model_property_rental"/>
+            <field name="groups" eval="[(4, ref('group_property_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- Property Auction: agent sees only their auctions -->
+        <record id="rule_auction_agent_own" model="ir.rule">
+            <field name="name">Property Auction: agent own records only</field>
+            <field name="model_id" ref="model_property_auction"/>
+            <field name="groups" eval="[(4, ref('group_property_agent'))]"/>
+            <field name="domain_force">[('responsible_id', '=', user.id)]</field>
+        </record>
+        <!-- Property Auction: manager sees all -->
+        <record id="rule_auction_manager_all" model="ir.rule">
+            <field name="name">Property Auction: manager all records</field>
+            <field name="model_id" ref="model_property_auction"/>
+            <field name="groups" eval="[(4, ref('group_property_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <!-- CRM Lead: agent sees only their leads -->
+        <record id="rule_crm_lead_agent_own" model="ir.rule">
+            <field name="name">CRM Lead: agent own records only</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_property_agent'))]"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+        </record>
+        <!-- CRM Lead: manager sees all -->
+        <record id="rule_crm_lead_manager_all" model="ir.rule">
+            <field name="name">CRM Lead: manager all records</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="groups" eval="[(4, ref('group_property_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+    </data>
+</odoo>
