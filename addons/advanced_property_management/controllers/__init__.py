@@ -20,3 +20,4 @@
 #
 #############################################################################
 from . import advanced_property_management
+from . import property_api
