@@ -28,12 +28,21 @@ class PropertyImages(models.Model):
     _name = 'property.image'
     _description = 'Property Images'
 
-    name = fields.Char(string='Name', required=True,
+    name = fields.Char(string='Name', required=False,
                        help='Name for the given image')
     description = fields.Text(string='Description',
                               help='A brief description of the image given')
     image = fields.Binary(string='Image', required=True,
                           help='The properties image')
+    overview_image = fields.Selection(
+        [('front', 'Front'),
+         ('back', 'Back'),
+         ('right_side', 'Right Side'),
+         ('left_side', 'Left Side'),
+         ('360_view', '360 View'),
+         ('others', 'Others')],
+        string='Overview Image',
+        help='The overview perspective of the image')
     property_id = fields.Many2one('property.property',
                                   string='Property',
                                   help='Related property')

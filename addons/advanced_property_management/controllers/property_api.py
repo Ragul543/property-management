@@ -30,12 +30,53 @@ class PropertyAPI(http.Controller):
     # ── CORS preflight ───────────────────────────────────────────
     @http.route(
         ['/api/properties', '/api/properties/<int:prop_id>',
-         '/api/property-types', '/api/contact', '/api/inquiry'],
+         '/api/property-types', '/api/contact', '/api/inquiry',
+         '/api/property-image/<string:model>/<int:rec_id>'],
         type='http', auth='public', methods=['OPTIONS'], csrf=False,
     )
     def options_handler(self, **kw):
         """Handle CORS preflight requests"""
         return Response('', status=200, headers=CORS_HEADERS)
+
+    # ── Public Image Endpoint ─────────────────────────────────────
+    @http.route('/api/property-image/<string:model>/<int:rec_id>',
+                type='http', auth='public', methods=['GET'], csrf=False)
+    def get_property_image(self, model, rec_id, **kw):
+        """
+        GET /api/property-image/<model>/<id>
+        Serves property images publicly using sudo() to bypass access rights.
+        Supported models: property, gallery, user, partner
+        """
+        try:
+            model_map = {
+                'property': ('property.property', 'image'),
+                'gallery': ('property.image', 'image'),
+                'user': ('res.users', 'avatar_128'),
+                'partner': ('res.partner', 'avatar_128'),
+            }
+            if model not in model_map:
+                return Response('Not found', status=404)
+
+            odoo_model, field_name = model_map[model]
+            record = request.env[odoo_model].sudo().browse(rec_id)
+            if not record.exists():
+                return Response('Not found', status=404)
+
+            image_data = record[field_name]
+            if not image_data:
+                return Response('No image', status=404)
+
+            image_bytes = base64.b64decode(image_data)
+            headers = {
+                'Content-Type': 'image/png',
+                'Cache-Control': 'public, max-age=86400',
+                'Access-Control-Allow-Origin': '*',
+            }
+            return Response(image_bytes, status=200, headers=headers)
+
+        except Exception as e:
+            _logger.exception("Error serving property image")
+            return Response('Error', status=500)
 
     # ── List Properties ──────────────────────────────────────────
     @http.route('/api/properties', type='http', auth='public',
@@ -102,19 +143,27 @@ class PropertyAPI(http.Controller):
 
             data = []
             for prop in properties:
-                # Get image URL
+                # Get image URL via public API endpoint
                 image_url = ''
                 if prop.image:
-                    image_url = f'{base_url}/web/image/property.property/{prop.id}/image'
+                    image_url = f'{base_url}/api/property-image/property/{prop.id}'
 
-                # Get gallery images
+                # Get gallery images with overview_image type
                 images = []
                 if prop.image:
-                    images.append(image_url)
+                    images.append({
+                        'id': prop.id,
+                        'url': image_url,
+                        'name': prop.name or '',
+                        'overview_image': 'front',
+                    })
                 for img in prop.property_image_ids:
-                    images.append(
-                        f'{base_url}/web/image/property.image/{img.id}/image'
-                    )
+                    images.append({
+                        'id': img.id,
+                        'url': f'{base_url}/api/property-image/gallery/{img.id}',
+                        'name': img.name or '',
+                        'overview_image': img.overview_image or 'others',
+                    })
 
                 # Get facilities
                 facilities = [f.facility for f in prop.facility_ids]
@@ -193,12 +242,22 @@ class PropertyAPI(http.Controller):
 
             base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
 
-            # Main image + gallery
+            # Main image + gallery with overview_image type
             images = []
             if prop.image:
-                images.append(f'{base_url}/web/image/property.property/{prop.id}/image')
+                images.append({
+                    'id': prop.id,
+                    'url': f'{base_url}/api/property-image/property/{prop.id}',
+                    'name': prop.name or '',
+                    'overview_image': 'front',
+                })
             for img in prop.property_image_ids:
-                images.append(f'{base_url}/web/image/property.image/{img.id}/image')
+                images.append({
+                    'id': img.id,
+                    'url': f'{base_url}/api/property-image/gallery/{img.id}',
+                    'name': img.name or '',
+                    'overview_image': img.overview_image or 'others',
+                })
 
             # Facilities
             facilities = [f.facility for f in prop.facility_ids]
@@ -242,14 +301,14 @@ class PropertyAPI(http.Controller):
                     'email': prop.responsible_id.email or '',
                     'phone': prop.responsible_id.phone or
                              (prop.responsible_id.partner_id.phone if prop.responsible_id.partner_id else ''),
-                    'image': f'{base_url}/web/image/res.users/{prop.responsible_id.id}/avatar_128',
+                    'image': f'{base_url}/api/property-image/user/{prop.responsible_id.id}',
                 }
             elif prop.landlord_id:
                 agent = {
                     'name': prop.landlord_id.name or '',
                     'email': prop.landlord_id.email or '',
                     'phone': prop.landlord_id.phone or '',
-                    'image': f'{base_url}/web/image/res.partner/{prop.landlord_id.id}/avatar_128',
+                    'image': f'{base_url}/api/property-image/partner/{prop.landlord_id.id}',
                 }
 
             data = {

@@ -164,7 +164,8 @@
                             <field name="property_image_ids">
                                 <kanban>
                                     <field name="id"/>
-                                    <field name="name"/>
+                                    <!-- <field name="name"/> -->
+                                    <field name="overview_image"/>
                                     <field name="image"/>
                                     <field name="description"/>
                                     <templates>
@@ -182,6 +183,8 @@
                                                         </strong>
                                                         <br/>
                                                         <field name="description"/>
+                                                        <br/>
+                                                        <field name="overview_image"/>
                                                     </t>
                                                 </div>
                                             </div>
@@ -194,6 +197,7 @@
                                             <group>
                                                 <field name="name"/>
                                                 <field name="description"/>
+                                                <field name="overview_image"/>
                                             </group>
                                             <group>
                                                 <field name="image" string=""
